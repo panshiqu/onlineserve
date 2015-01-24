@@ -139,7 +139,7 @@ int SocketBase::Send(const char *buf, size_t length, int flags)
 
 	while (length > 0)
 	{
-		while ((sends = send(m_socket, &buf[hasSend], length, flags)) == -1);
+		while ((sends = send(m_socket, &buf[hasSend], length, flags)) == -1 && errno == EINTR);
 		if (sends <= 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -159,9 +159,7 @@ int SocketBase::Send(const char *buf, size_t length, int flags)
 
 int SocketBase::SendTo(const char *buf, size_t length, const sockaddr *toaddress, socklen_t tolength, int flags)
 {
-	if (m_socket == INVALID_SOCKET || buf == NULL || length <= 0) return -1;
-
-	return sendto(m_socket, buf, length, flags, toaddress, tolength);
+	return true;
 }
 
 int SocketBase::Receive(char *buf, size_t length, int flags)
@@ -170,17 +168,12 @@ int SocketBase::Receive(char *buf, size_t length, int flags)
 
 	if (m_socket == INVALID_SOCKET || buf == NULL || length <= 0) return -1;
 
-	while ((res = recv(m_socket, buf, length, flags)) == -1);
+	while ((res = recv(m_socket, buf, length, flags)) == -1 && errno == EINTR);
 	return res;
 }
 
 int SocketBase::ReceiveFrom(char *buf, size_t length, sockaddr *fromaddress, socklen_t *fromlength, int flags)
 {
-	int res;
-
-	if (m_socket == INVALID_SOCKET || buf == NULL || length <= 0) return -1;
-
-	while ((res = recvfrom(m_socket, buf, length, flags, fromaddress, fromlength)) == -1);
-	return res;
+	return true;
 }
 
