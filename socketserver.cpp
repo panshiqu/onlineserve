@@ -19,6 +19,18 @@ SocketServer::~SocketServer()
 
 }
 
+bool SocketServer::SetNonblock(int nSocket)
+{
+	// 获取描述符属性
+	int nOptions = fcntl(nSocket, F_GETFL);
+	if (nOptions == -1) return false;
+	nOptions |= O_NONBLOCK;
+
+	// 设置非阻塞属性
+	if (fcntl(nSocket, F_SETFL, nOptions) == -1) return false;
+	return true;
+}
+
 bool SocketServer::Init(int nPort)
 {
 	// 创建套接字
@@ -28,13 +40,8 @@ bool SocketServer::Init(int nPort)
 	int nReuseaddr = 1;
 	if (setsockopt(m_nSocket, SOL_SOCKET, SO_REUSEADDR, &nReuseaddr, sizeof(nReuseaddr)) == -1) return false;
 
-	// 获取描述符属性
-	int nOptions = fcntl(m_nSocket, F_GETFL);
-	if (nOptions == -1) return false;
-	nOptions |= O_NONBLOCK;
-
 	// 设置非阻塞属性
-	if (fcntl(m_nSocket, F_SETFL, nOptions) == -1) return false;
+	if (!SetNonblock(m_nSocket)) return false;
 
 	// 绑定端口
 	struct sockaddr_in addr;
@@ -61,7 +68,7 @@ void SocketServer::Release(void)
 void SocketServer::Run(void)
 {
 	int nMaxFD = 0;
-	fd_set readSet, writeSet, exSet;
+	fd_set readSet, writeSet;
 
 	while (true)
 	{
@@ -69,7 +76,6 @@ void SocketServer::Run(void)
 
 		FD_ZERO(&readSet);
 		FD_ZERO(&writeSet);
-		FD_ZERO(&exSet);
 
 		FD_SET(m_nSocket, &readSet);
 
@@ -86,7 +92,7 @@ void SocketServer::Run(void)
 			FD_SET(nSocket, &readSet);
 		}
 
-		if (select(nMaxFD+1, &readSet, &writeSet, &exSet, NULL) < 0)
+		if (select(nMaxFD+1, &readSet, &writeSet, NULL, NULL) < 0)
 		{
 			cout << "select error." << endl;
 			return ;
@@ -101,6 +107,8 @@ void SocketServer::Run(void)
 			else
 			{
 				SocketClient *pClient = new SocketClient(fd);
+				m_vClient.push_back(pClient);
+				SetNonblock(fd);
 			}
 		}
 
@@ -111,15 +119,12 @@ void SocketServer::Run(void)
 
 			if (FD_ISSET(nSocket, &readSet))
 			{
-				cout << "read." << endl;
+				if(!pClient->RunRecv())
+					m_vClient.erase(m_vClient.begin()+i);
 			}
-				//pClient->Recv();
 
 			if (FD_ISSET(nSocket, &writeSet))
-			{
-				cout << "write." << endl;
-			}
-				//pClient->Send();
+				pClient->RunSend();
 		}
 	}
 }

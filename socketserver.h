@@ -29,6 +29,9 @@ public:
 	void Run(void);
 
 private:
+	bool SetNonblock(int nSocket);
+
+private:
 	int m_nSocket;
 	vector<SocketClient *> m_vClient;
 };
