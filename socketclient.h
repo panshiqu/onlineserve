@@ -27,14 +27,21 @@ typedef struct SENDBUFFER
 	int nLength;
 } SendBuffer;
 
+typedef struct HEADER
+{
+	int nLength;
+} Header;
+
+class SocketServer;
 class SocketClient {
 public:
-	SocketClient(int nSocket);
+	SocketClient(SocketServer *pServer, int nSocket);
 	virtual ~SocketClient();
 
-	void Send(void);
+	void Send(char *pBuffer, int nLength);
+	char *Prase(void);
 
-	void RunSend(void);
+	bool RunSend(void);
 	bool RunRecv(void);
 
 	int GetSocket(void)				{ return m_nSocket; }
@@ -45,7 +52,8 @@ public:
 private:
 	int m_nSocket;
 	int m_nBufferOffset;
-	list<SendBuffer> m_lSendBuffers;
+	SocketServer *m_pParent;
+	list<SendBuffer *> m_lSendBuffers;
 	char m_szRecvBuffers[SOCKET_READ_BUFFER_SIZE];
 };
 

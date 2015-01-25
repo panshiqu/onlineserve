@@ -31,6 +31,15 @@ bool SocketServer::SetNonblock(int nSocket)
 	return true;
 }
 
+void SocketServer::Close(int nSocket)
+{
+	if (nSocket != -1)
+	{
+		shutdown(nSocket, SHUT_RDWR);
+		close(nSocket);
+	}
+}
+
 bool SocketServer::Init(int nPort)
 {
 	// 创建套接字
@@ -53,16 +62,6 @@ bool SocketServer::Init(int nPort)
 	// 监听端口
 	if (listen(m_nSocket, 10) == -1) return false;
 	return true;
-}
-
-void SocketServer::Release(void)
-{
-	if (m_nSocket != -1)
-	{
-		shutdown(m_nSocket, SHUT_RDWR);
-		close(m_nSocket);
-		m_nSocket = -1;
-	}
 }
 
 void SocketServer::Run(void)
@@ -106,9 +105,8 @@ void SocketServer::Run(void)
 			if (fd < 0) cout << "accept error." << endl;
 			else
 			{
-				SocketClient *pClient = new SocketClient(fd);
-				m_vClient.push_back(pClient);
-				SetNonblock(fd);
+				if (!SetNonblock(fd)) Close(fd);
+				else new SocketClient(this, fd);
 			}
 		}
 
@@ -119,13 +117,51 @@ void SocketServer::Run(void)
 
 			if (FD_ISSET(nSocket, &readSet))
 			{
-				if(!pClient->RunRecv())
-					m_vClient.erase(m_vClient.begin()+i);
+				if(pClient->RunRecv())
+				{
+					char *pMessage = pClient->Prase();
+					if (pMessage) OnMessage(pClient, pMessage);
+				}
 			}
 
 			if (FD_ISSET(nSocket, &writeSet))
 				pClient->RunSend();
 		}
 	}
+}
+
+void SocketServer::Register(SocketClient *pClient)
+{
+	m_vClient.push_back(pClient);
+	OnConnected(pClient);
+}
+
+void SocketServer::UnRegister(SocketClient *pClient)
+{
+
+	for (vector<SocketClient *>::iterator itr = m_vClient.begin(); itr != m_vClient.end(); itr++)
+		if ((*itr) == pClient) m_vClient.erase(itr);
+
+	OnDisconnected(pClient);
+	Close(pClient->GetSocket());
+	delete pClient;
+}
+
+void SocketServer::OnMessage(SocketClient *pClient, char *pBuffer)
+{
+	cout << "OnMessage." << endl;
+
+	cout << &pBuffer[sizeof(Header)] << endl;
+	delete pBuffer;
+}
+
+void SocketServer::OnConnected(SocketClient *pClient)
+{
+	cout << "OnConnected." << endl;
+}
+
+void SocketServer::OnDisconnected(SocketClient *pClient)
+{
+	cout << "OnDisconnected." << endl;
 }
 

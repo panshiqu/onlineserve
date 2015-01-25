@@ -48,6 +48,11 @@ void thr_fn2(void)
 	cout << "thr_fn2" << endl;
 }
 
+struct TEST {
+	int nLength;
+	char szTest[8];
+};
+
 int main(void)
 {
 //	thread t1{bind(thr_fn1)};
@@ -56,8 +61,21 @@ int main(void)
 //	t1.join();
 //	t2.join();
 
+//	TEST tt;
+//	memcpy(tt.szTest, "Hello", sizeof("Hello"));
+//	tt.nLength = 9;
+//
+//
+//	int nSocket = socket(AF_INET, SOCK_STREAM, 0);
+//	struct sockaddr_in addr;
+//	addr.sin_family = AF_INET;
+//	addr.sin_port = htons(11111);
+//	inet_pton(AF_INET, "127.0.0.1", &(addr.sin_addr));
+//	connect(nSocket, (struct sockaddr *)&addr, sizeof(addr));
+//	send(nSocket, (char *)&tt, tt.nLength, 0);
+
 	SocketServer Srv;
-	if (!Srv.Init(11111)) Srv.Release();
+	Srv.Init(11111);
 
 	Srv.Run();
 

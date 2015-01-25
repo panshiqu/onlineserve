@@ -24,12 +24,19 @@ public:
 	SocketServer();
 	virtual ~SocketServer();
 
+	virtual void OnMessage(SocketClient *pClient, char *pBuffer);
+	virtual void OnConnected(SocketClient *pClient);
+	virtual void OnDisconnected(SocketClient *pClient);
+
 	bool Init(int nPort);
-	void Release(void);
 	void Run(void);
+
+	void Register(SocketClient *pClient);
+	void UnRegister(SocketClient *pClient);
 
 private:
 	bool SetNonblock(int nSocket);
+	void Close(int nSocket);
 
 private:
 	int m_nSocket;
