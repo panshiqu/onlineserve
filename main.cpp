@@ -18,11 +18,6 @@ void thr_fn1(void)
 {
 	cout << "thr_fn1" << endl;
 
-	SocketServer Srv;
-	if (!Srv.Init(11111)) Srv.Release();
-
-	Srv.Run();
-
 //	SocketBase Srv;
 //	Srv.Create();
 //	Srv.Bind(11111, "127.0.0.1");
@@ -55,11 +50,17 @@ void thr_fn2(void)
 
 int main(void)
 {
-	thread t1{bind(thr_fn1)};
+//	thread t1{bind(thr_fn1)};
 //	thread t2{bind(thr_fn2)};
 
-	t1.join();
+//	t1.join();
 //	t2.join();
+
+	SocketServer Srv;
+	if (!Srv.Init(11111)) Srv.Release();
+
+	Srv.Run();
+
 	return 0;
 }
 

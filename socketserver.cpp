@@ -6,6 +6,7 @@
  */
 
 #include "socketserver.h"
+#include "socketclient.h"
 
 SocketServer::SocketServer()
 	: m_nSocket(-1)
@@ -59,83 +60,67 @@ void SocketServer::Release(void)
 
 void SocketServer::Run(void)
 {
-	int nMaxFD = m_nSocket;
+	int nMaxFD = 0;
 	fd_set readSet, writeSet, exSet;
 
-	FD_ZERO(&readSet);
-	FD_ZERO(&writeSet);
-	FD_ZERO(&exSet);
-
-	FD_SET(m_nSocket, &readSet);
-
-	select(nMaxFD+1, &readSet, &writeSet, &exSet, NULL);
-
-	if (FD_ISSET(m_nSocket, &readSet))
+	while (true)
 	{
-		cout << "srv recv." << endl;
-	}
+		nMaxFD = m_nSocket;
 
-//	while (true)
-//	{
-//
-//	}
-//	while (1) {
-//	        maxfd = listener;
-//
-//	        FD_ZERO(&readset);
-//	        FD_ZERO(&writeset);
-//	        FD_ZERO(&exset);
-//
-//	        FD_SET(listener, &readset);
-//
-//	        for (i=0; i < FD_SETSIZE; ++i) {
-//	            if (state[i]) {
-//	                if (i > maxfd)
-//	                    maxfd = i;
-//	                FD_SET(i, &readset);
-//	                if (state[i]->writing) {
-//	                    FD_SET(i, &writeset);
-//	                }
-//	            }
-//	        }
-//
-//	        if (select(maxfd+1, &readset, &writeset, &exset, NULL) < 0) {
-//	            perror("select");
-//	            return;
-//	        }
-//
-//	        if (FD_ISSET(listener, &readset)) {
-//	            struct sockaddr_storage ss;
-//	            socklen_t slen = sizeof(ss);
-//	            int fd = accept(listener, (struct sockaddr*)&ss, &slen);
-//	            if (fd < 0) {
-//	                perror("accept");
-//	            } else if (fd > FD_SETSIZE) {
-//	                close(fd);
-//	            } else {
-//	                make_nonblocking(fd);
-//	                state[fd] = alloc_fd_state();
-//	                assert(state[fd]);/*XXX*/
-//	            }
-//	        }
-//
-//	        for (i=0; i < maxfd+1; ++i) {
-//	            int r = 0;
-//	            if (i == listener)
-//	                continue;
-//
-//	            if (FD_ISSET(i, &readset)) {
-//	                r = do_read(i, state[i]);
-//	            }
-//	            if (r == 0 && FD_ISSET(i, &writeset)) {
-//	                r = do_write(i, state[i]);
-//	            }
-//	            if (r) {
-//	                free_fd_state(state[i]);
-//	                state[i] = NULL;
-//	                close(i);
-//	            }
-//	        }
-//	    }
+		FD_ZERO(&readSet);
+		FD_ZERO(&writeSet);
+		FD_ZERO(&exSet);
+
+		FD_SET(m_nSocket, &readSet);
+
+		for (size_t i = 0; i < m_vClient.size(); i++)
+		{
+			SocketClient *pClient = m_vClient[i];
+			int nSocket = pClient->GetSocket();
+
+			if (nSocket > nMaxFD) nMaxFD = nSocket;
+
+			if (pClient->GetSendSize())
+				FD_SET(nSocket, &writeSet);
+
+			FD_SET(nSocket, &readSet);
+		}
+
+		if (select(nMaxFD+1, &readSet, &writeSet, &exSet, NULL) < 0)
+		{
+			cout << "select error." << endl;
+			return ;
+		}
+
+		if (FD_ISSET(m_nSocket, &readSet))
+		{
+			struct sockaddr_in addr;
+			socklen_t length = sizeof(struct sockaddr_in);
+			int fd = accept(m_nSocket, (struct sockaddr *)&addr, &length);
+			if (fd < 0) cout << "accept error." << endl;
+			else
+			{
+				SocketClient *pClient = new SocketClient(fd);
+			}
+		}
+
+		for (size_t i = 0; i < m_vClient.size(); i++)
+		{
+			SocketClient *pClient = m_vClient[i];
+			int nSocket = pClient->GetSocket();
+
+			if (FD_ISSET(nSocket, &readSet))
+			{
+				cout << "read." << endl;
+			}
+				//pClient->Recv();
+
+			if (FD_ISSET(nSocket, &writeSet))
+			{
+				cout << "write." << endl;
+			}
+				//pClient->Send();
+		}
+	}
 }
 

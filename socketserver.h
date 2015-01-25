@@ -14,9 +14,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <vector>
 #include <iostream>
 using namespace std;
 
+class SocketClient;
 class SocketServer {
 public:
 	SocketServer();
@@ -28,6 +30,7 @@ public:
 
 private:
 	int m_nSocket;
+	vector<SocketClient *> m_vClient;
 };
 
 #endif /* SOCKETSERVER_H_ */
