@@ -140,7 +140,14 @@ void SocketServer::UnRegister(SocketClient *pClient)
 {
 
 	for (vector<SocketClient *>::iterator itr = m_vClient.begin(); itr != m_vClient.end(); itr++)
-		if ((*itr) == pClient) m_vClient.erase(itr);
+	{
+		if (*itr == pClient)
+		{
+			m_vClient.erase(itr);
+			break;
+		}
+	}
+
 
 	OnDisconnected(pClient);
 	Close(pClient->GetSocket());

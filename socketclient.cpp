@@ -53,7 +53,9 @@ char *SocketClient::Prase(void)
 bool SocketClient::RunSend(void)
 {
 	SendBuffer *pSendBuffer = m_lSendBuffers.front();
-	int nRes = send(m_nSocket, pSendBuffer->pBuffer + pSendBuffer->nOffset, pSendBuffer->nLength - pSendBuffer->nOffset, 0);
+
+	int nRes;
+	while ((nRes = send(m_nSocket, pSendBuffer->pBuffer + pSendBuffer->nOffset, pSendBuffer->nLength - pSendBuffer->nOffset, 0)) == -1 && errno == EINTR);
 
 	if (nRes <= 0)
 	{
@@ -78,7 +80,6 @@ bool SocketClient::RunSend(void)
 bool SocketClient::RunRecv(void)
 {
 	int nRes;
-
 	while ((nRes = recv(m_nSocket, &m_szRecvBuffers[m_nBufferOffset], SOCKET_READ_BUFFER_SIZE - m_nBufferOffset, 0)) == -1 && errno == EINTR);
 
 	if (nRes <= 0)
@@ -86,6 +87,10 @@ bool SocketClient::RunRecv(void)
 		m_pParent->UnRegister(this);
 		return false;
 	}
+
+	char *pBuffer = new char[7];
+	memcpy(pBuffer, "welcome", 7);
+	Send(pBuffer, 7);
 
 	m_nBufferOffset += nRes;
 	return true;

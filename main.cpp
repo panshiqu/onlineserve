@@ -18,6 +18,16 @@ void thr_fn1(void)
 {
 	cout << "thr_fn1" << endl;
 
+
+}
+
+void thr_fn2(void)
+{
+	cout << "thr_fn2" << endl;
+}
+
+void thr_fn3(void)
+{
 //	SocketBase Srv;
 //	Srv.Create();
 //	Srv.Bind(11111, "127.0.0.1");
@@ -41,11 +51,6 @@ void thr_fn1(void)
 //			Clt.Close();
 //		}
 //	}
-}
-
-void thr_fn2(void)
-{
-	cout << "thr_fn2" << endl;
 }
 
 struct TEST {
@@ -72,7 +77,18 @@ int main(void)
 //	addr.sin_port = htons(11111);
 //	inet_pton(AF_INET, "127.0.0.1", &(addr.sin_addr));
 //	connect(nSocket, (struct sockaddr *)&addr, sizeof(addr));
-//	send(nSocket, (char *)&tt, tt.nLength, 0);
+//
+//	while (true)
+//	{
+//		send(nSocket, (char *)&tt, tt.nLength, 0);
+//
+//		char szBuf[128];
+//		memset(szBuf, 0, 128);
+//		recv(nSocket, szBuf, 128, 0);
+//		cout << szBuf <<endl;
+//		sleep(1);
+//	}
+
 
 	SocketServer Srv;
 	Srv.Init(11111);
