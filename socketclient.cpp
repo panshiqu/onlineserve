@@ -8,30 +8,16 @@
 #include "socketclient.h"
 #include "socketserver.h"
 
-SocketClient::SocketClient(SocketServer *pServer, int nSocket)
+SocketClient::SocketClient(int nSocket)
 	: m_nSocket(nSocket)
 	, m_nBufferOffset(0)
-	, m_pParent(pServer)
 {
 	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
-	m_pParent->Register(this);
 }
 
 SocketClient::~SocketClient()
 {
 
-}
-
-void SocketClient::Send(char *pBuffer, int nLength)
-{
-	if (!pBuffer || nLength <= 0) return ;
-
-	SendBuffer *pSendBuffer = new SendBuffer();
-	pSendBuffer->pBuffer = pBuffer;
-	pSendBuffer->nLength = nLength;
-	pSendBuffer->nOffset = 0;
-
-	m_lSendBuffers.push_back(pSendBuffer);
 }
 
 char *SocketClient::Prase(void)
@@ -50,49 +36,51 @@ char *SocketClient::Prase(void)
 	return pMessage;
 }
 
-bool SocketClient::RunSend(void)
+void SocketClient::Send(char *pBuffer, int nLength)
+{
+	if (!pBuffer || nLength <= 0) return ;
+
+	char *pTemp = new char[nLength];
+	memcpy(pTemp, pBuffer, nLength);
+
+	SendBuffer *pSendBuffer = new SendBuffer();
+	pSendBuffer->pBuffer = pTemp;
+	pSendBuffer->nLength = nLength;
+	pSendBuffer->nOffset = 0;
+
+	m_lSendBuffers.push_back(pSendBuffer);
+}
+
+int SocketClient::RunSend(void)
 {
 	SendBuffer *pSendBuffer = m_lSendBuffers.front();
 
 	int nRes;
 	while ((nRes = send(m_nSocket, pSendBuffer->pBuffer + pSendBuffer->nOffset, pSendBuffer->nLength - pSendBuffer->nOffset, 0)) == -1 && errno == EINTR);
 
-	if (nRes <= 0)
+	if (nRes > 0)
 	{
-		m_pParent->UnRegister(this);
-		return false;
+		if (nRes == pSendBuffer->nLength - pSendBuffer->nOffset)
+		{
+			m_lSendBuffers.pop_front();
+			delete pSendBuffer->pBuffer;
+			delete pSendBuffer;
+		}
+		else
+		{
+			pSendBuffer->nOffset += nRes;
+		}
 	}
 
-	if (nRes == pSendBuffer->nLength - pSendBuffer->nOffset)
-	{
-		m_lSendBuffers.pop_front();
-		delete pSendBuffer->pBuffer;
-		delete pSendBuffer;
-	}
-	else
-	{
-		pSendBuffer->nOffset += nRes;
-	}
-
-	return true;
+	return nRes;
 }
 
-bool SocketClient::RunRecv(void)
+int SocketClient::RunRecv(void)
 {
 	int nRes;
 	while ((nRes = recv(m_nSocket, &m_szRecvBuffers[m_nBufferOffset], SOCKET_READ_BUFFER_SIZE - m_nBufferOffset, 0)) == -1 && errno == EINTR);
 
-	if (nRes <= 0)
-	{
-		m_pParent->UnRegister(this);
-		return false;
-	}
-
-	char *pBuffer = new char[7];
-	memcpy(pBuffer, "welcome", 7);
-	Send(pBuffer, 7);
-
-	m_nBufferOffset += nRes;
-	return true;
+	if (nRes > 0) m_nBufferOffset += nRes;
+	return nRes;
 }
 

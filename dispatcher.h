@@ -28,7 +28,7 @@ public:
 	void Dispatch(void);
 
 private:
-	std::mutex m_mMutex;
+	//std::mutex m_mMutex;
 	list<char *> m_lRecvMessages;
 };
 

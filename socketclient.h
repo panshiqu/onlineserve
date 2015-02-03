@@ -33,27 +33,23 @@ typedef struct HEADER
 	int nLength;
 } Header;
 
-class SocketServer;
 class SocketClient {
 public:
-	SocketClient(SocketServer *pServer, int nSocket);
+	SocketClient(int nSocket);
 	virtual ~SocketClient();
 
-	void Send(char *pBuffer, int nLength);
 	char *Prase(void);
+	void Send(char *pBuffer, int nLength);
 
-	bool RunSend(void);
-	bool RunRecv(void);
+	int RunSend(void);
+	int RunRecv(void);
 
 	int GetSocket(void)				{ return m_nSocket; }
 	int GetSendSize(void)			{ return m_lSendBuffers.size(); }
 
-	void SetSocket(int nSocket)	{ m_nSocket = nSocket; }
-
 private:
 	int m_nSocket;
 	int m_nBufferOffset;
-	SocketServer *m_pParent;
 	list<SendBuffer *> m_lSendBuffers;
 	char m_szRecvBuffers[SOCKET_READ_BUFFER_SIZE];
 };

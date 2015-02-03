@@ -16,7 +16,11 @@ SocketServer::SocketServer()
 
 SocketServer::~SocketServer()
 {
-
+	for (auto client : m_vClient)
+	{
+		Close(client->GetSocket());
+		delete client;
+	}
 }
 
 bool SocketServer::SetNonblock(int nSocket)
@@ -35,6 +39,7 @@ void SocketServer::Close(int nSocket)
 {
 	if (nSocket != -1)
 	{
+		// 关闭套接字
 		shutdown(nSocket, SHUT_RDWR);
 		close(nSocket);
 	}
@@ -66,8 +71,10 @@ bool SocketServer::Init(int nPort)
 
 void SocketServer::Run(void)
 {
+	int nRes = 0;
 	int nMaxFD = 0;
 	fd_set readSet, writeSet;
+	vector<SocketClient *>::iterator itr;
 
 	while (true)
 	{
@@ -78,9 +85,10 @@ void SocketServer::Run(void)
 
 		FD_SET(m_nSocket, &readSet);
 
-		for (size_t i = 0; i < m_vClient.size(); i++)
+		itr = m_vClient.begin();
+		for (; itr != m_vClient.end(); itr++)
 		{
-			SocketClient *pClient = m_vClient[i];
+			SocketClient *pClient = *itr;
 			int nSocket = pClient->GetSocket();
 
 			if (nSocket > nMaxFD) nMaxFD = nSocket;
@@ -106,52 +114,44 @@ void SocketServer::Run(void)
 			else
 			{
 				if (!SetNonblock(fd)) Close(fd);
-				else new SocketClient(this, fd);
+				else
+				{
+					SocketClient *pClient = new SocketClient(fd);
+					m_vClient.push_back(pClient);
+					OnConnected(pClient);
+				}
 			}
 		}
 
-		for (size_t i = 0; i < m_vClient.size(); i++)
+		itr = m_vClient.begin();
+		for (; itr != m_vClient.end(); itr++)
 		{
-			SocketClient *pClient = m_vClient[i];
+			SocketClient *pClient = *itr;
 			int nSocket = pClient->GetSocket();
 
 			if (FD_ISSET(nSocket, &readSet))
 			{
-				if(pClient->RunRecv())
+				if((nRes = pClient->RunRecv()))
 				{
-					char *pMessage = pClient->Prase();
-					if (pMessage) OnMessage(pClient, pMessage);
+					char *pMessage = NULL;
+					while ((pMessage = pClient->Prase()))
+						OnMessage(pClient, pMessage);
 				}
 			}
 
 			if (FD_ISSET(nSocket, &writeSet))
-				pClient->RunSend();
+				nRes = pClient->RunSend();
+
+			if (nRes <= 0)
+			{
+				// 断开连接
+				m_vClient.erase(itr);
+				OnDisconnected(pClient);
+				Close(nSocket);
+				delete pClient;
+			}
 		}
 	}
-}
-
-void SocketServer::Register(SocketClient *pClient)
-{
-	m_vClient.push_back(pClient);
-	OnConnected(pClient);
-}
-
-void SocketServer::UnRegister(SocketClient *pClient)
-{
-
-	for (vector<SocketClient *>::iterator itr = m_vClient.begin(); itr != m_vClient.end(); itr++)
-	{
-		if (*itr == pClient)
-		{
-			m_vClient.erase(itr);
-			break;
-		}
-	}
-
-
-	OnDisconnected(pClient);
-	Close(pClient->GetSocket());
-	delete pClient;
 }
 
 void SocketServer::OnMessage(SocketClient *pClient, char *pBuffer)
@@ -160,6 +160,10 @@ void SocketServer::OnMessage(SocketClient *pClient, char *pBuffer)
 
 	cout << &pBuffer[sizeof(Header)] << endl;
 	delete pBuffer;
+
+	char szBuffer[7];
+	memcpy(szBuffer, "welcome", 7);
+	pClient->Send(szBuffer, 7);
 }
 
 void SocketServer::OnConnected(SocketClient *pClient)

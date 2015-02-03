@@ -31,9 +31,6 @@ public:
 	bool Init(int nPort);
 	void Run(void);
 
-	void Register(SocketClient *pClient);
-	void UnRegister(SocketClient *pClient);
-
 private:
 	bool SetNonblock(int nSocket);
 	void Close(int nSocket);
