@@ -89,6 +89,20 @@ int main(void)
 //		sleep(1);
 //	}
 
+//	vector<int> vecTest;
+//	vecTest.push_back(1);
+//	for (vector<int>::iterator itr = vecTest.begin(); itr != vecTest.end(); itr++)
+//	{
+//		cout << *itr << endl;
+//		if (*itr == 1) vecTest.erase(itr);
+//	}
+//
+//	for (size_t i = 0; i < vecTest.size(); i++)
+//	{
+//		cout << vecTest[i] << endl;
+//		if (vecTest[i] == 1) vecTest.erase(vecTest.begin()+i);
+//	}
+
 	SocketServer Srv;
 	Srv.Init(11111);
 

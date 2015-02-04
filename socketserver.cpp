@@ -71,10 +71,8 @@ bool SocketServer::Init(int nPort)
 
 void SocketServer::Run(void)
 {
-	int nRes = 0;
 	int nMaxFD = 0;
 	fd_set readSet, writeSet;
-	vector<SocketClient *>::iterator itr;
 
 	while (true)
 	{
@@ -85,10 +83,9 @@ void SocketServer::Run(void)
 
 		FD_SET(m_nSocket, &readSet);
 
-		itr = m_vClient.begin();
-		for (; itr != m_vClient.end(); itr++)
+		for (size_t i = 0; i < m_vClient.size(); i++)
 		{
-			SocketClient *pClient = *itr;
+			SocketClient *pClient = m_vClient[i];
 			int nSocket = pClient->GetSocket();
 
 			if (nSocket > nMaxFD) nMaxFD = nSocket;
@@ -123,10 +120,10 @@ void SocketServer::Run(void)
 			}
 		}
 
-		itr = m_vClient.begin();
-		for (; itr != m_vClient.end(); itr++)
+		for (size_t i = 0; i < m_vClient.size(); i++)
 		{
-			SocketClient *pClient = *itr;
+			int nRes = 1;
+			SocketClient *pClient = m_vClient[i];
 			int nSocket = pClient->GetSocket();
 
 			if (FD_ISSET(nSocket, &readSet))
@@ -139,13 +136,13 @@ void SocketServer::Run(void)
 				}
 			}
 
-			if (FD_ISSET(nSocket, &writeSet))
+			if ((nRes > 0) && FD_ISSET(nSocket, &writeSet))
 				nRes = pClient->RunSend();
 
 			if (nRes <= 0)
 			{
 				// 断开连接
-				m_vClient.erase(itr);
+				m_vClient.erase(m_vClient.begin()+i);
 				OnDisconnected(pClient);
 				Close(nSocket);
 				delete pClient;
@@ -158,7 +155,7 @@ void SocketServer::OnMessage(SocketClient *pClient, char *pBuffer)
 {
 	cout << "OnMessage." << endl;
 
-	cout << &pBuffer[sizeof(Header)] << endl;
+	//cout << &pBuffer[sizeof(Header)] << endl;
 	delete pBuffer;
 
 	char szBuffer[7];

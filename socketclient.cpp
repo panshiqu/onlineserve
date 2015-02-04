@@ -22,6 +22,8 @@ SocketClient::~SocketClient()
 
 char *SocketClient::Prase(void)
 {
+	if (m_nBufferOffset <= 0) return NULL;
+
 	Header *pHeader = (Header *)m_szRecvBuffers;
 	int nLength = pHeader->nLength;
 	if (nLength > m_nBufferOffset)
