@@ -1,6 +1,6 @@
 CC = gcc
 XX = g++
-CFLAGS = -g -std=c++0x
+CFLAGS = -g -std=c++0x -lpthread
 
 #INC += -I /usr/include/mysql
 #INC += -I /usr/local/include/mysql++/

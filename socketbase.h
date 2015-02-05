@@ -18,9 +18,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#ifndef INVALID_SOCKET
-#define INVALID_SOCKET -1
-#endif
+#include "header.h"
 
 class SocketBase {
 public:
@@ -45,6 +43,8 @@ public:
 	int Receive(char *pBuffer, size_t nLength, int nFlags = 0);
 	int ReceiveFrom(char *pBuffer, size_t nLength, sockaddr *pFromAddress, socklen_t *pFromLength, int nFlags = 0);
 
+	bool CheckRead(void);
+	bool CheckWrite(void);
 	bool SetNonblock(void);
 	bool SetReuseaddr(void);
 

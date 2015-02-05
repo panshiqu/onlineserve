@@ -14,27 +14,16 @@ using namespace std;
 
 #include "socketbase.h"
 
-#ifndef SOCKET_READ_BUFFER_SIZE
-#define SOCKET_READ_BUFFER_SIZE 8192
-#endif
-
-typedef struct SENDBUFFER
-{
-	char *pBuffer;
-	int nOffset;
-	int nLength;
-} SendBuffer;
-
-typedef struct HEADER
-{
-	int nLength;
-} Header;
-
 class SocketClient : public SocketBase
 {
 public:
 	SocketClient();
 	virtual ~SocketClient();
+
+	virtual void OnMessage(char *pBuffer);
+
+	bool Init(const char *pAddress, int nPort);
+	void Run(void);
 
 	char *Prase(void);
 	void Send(char *pBuffer, int nLength);

@@ -149,17 +149,47 @@ int SocketBase::SendTo(const char *pBuffer, size_t nLength, const sockaddr *pToA
 
 int SocketBase::Receive(char *pBuffer, size_t nLength, int nFlags)
 {
-	int res;
+	int nRes;
 
 	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return -1;
 
-	while ((res = recv(m_nSocket, pBuffer, nLength, nFlags)) == -1 && errno == EINTR);
-	return res;
+	while ((nRes = recv(m_nSocket, pBuffer, nLength, nFlags)) == -1 && errno == EINTR);
+	return nRes;
 }
 
 int SocketBase::ReceiveFrom(char *pBuffer, size_t nLength, sockaddr *pFromAddress, socklen_t *pFromLength, int nFlags)
 {
 	return true;
+}
+
+bool SocketBase::CheckRead(void)
+{
+	if (m_nSocket == INVALID_SOCKET) return false;
+
+	int nRes;
+	fd_set fds;
+	struct timeval tv;
+
+	FD_ZERO(&fds);
+	FD_SET(m_nSocket, &fds);
+	memset(&tv, 0, sizeof(tv));
+	while(((nRes = select(m_nSocket+1, &fds, NULL, NULL, &tv)) == -1) && (errno == EINTR));
+	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
+}
+
+bool SocketBase::CheckWrite(void)
+{
+	if (m_nSocket == INVALID_SOCKET) return false;
+
+	int nRes;
+	fd_set fds;
+	struct timeval tv;
+
+	FD_ZERO(&fds);
+	FD_SET(m_nSocket, &fds);
+	memset(&tv, 0, sizeof(tv));
+	while(((nRes = select(m_nSocket+1, NULL, &fds, NULL, &tv)) == -1) && (errno == EINTR));
+	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
 }
 
 bool SocketBase::SetNonblock(void)

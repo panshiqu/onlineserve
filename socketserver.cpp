@@ -48,6 +48,7 @@ bool SocketServer::Init(int nPort)
 void SocketServer::Run(void)
 {
 	int nMaxFD = 0;
+	char *pMessage = NULL;
 	fd_set readSet, writeSet;
 
 	while (true)
@@ -82,7 +83,7 @@ void SocketServer::Run(void)
 		{
 			struct sockaddr_in addr;
 			socklen_t length = sizeof(struct sockaddr_in);
-			int nSocket = accept(m_nSocket, (struct sockaddr *)&addr, &length);
+			int nSocket = Accept((struct sockaddr *)&addr, &length);
 			if (nSocket < 0) cout << "accept error." << endl;
 			else
 			{
@@ -110,12 +111,9 @@ void SocketServer::Run(void)
 
 			if (FD_ISSET(nSocket, &readSet))
 			{
-				if((nRes = pClient->RunRecv()))
-				{
-					char *pMessage = NULL;
-					while ((pMessage = pClient->Prase()))
-						OnMessage(pClient, pMessage);
-				}
+				nRes = pClient->RunRecv();
+				while ((pMessage = pClient->Prase()))
+					OnMessage(pClient, pMessage);
 			}
 
 			if ((nRes > 0) && FD_ISSET(nSocket, &writeSet))
@@ -134,23 +132,16 @@ void SocketServer::Run(void)
 
 void SocketServer::OnMessage(SocketClient *pClient, char *pBuffer)
 {
-	cout << "OnMessage." << endl;
 
-	//cout << &pBuffer[sizeof(Header)] << endl;
-	delete pBuffer;
-
-	char szBuffer[7];
-	memcpy(szBuffer, "welcome", 7);
-	pClient->Send(szBuffer, 7);
 }
 
 void SocketServer::OnConnected(SocketClient *pClient)
 {
-	cout << "OnConnected." << endl;
+
 }
 
 void SocketServer::OnDisconnected(SocketClient *pClient)
 {
-	cout << "OnDisconnected." << endl;
+
 }
 

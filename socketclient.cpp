@@ -6,7 +6,6 @@
  */
 
 #include "socketclient.h"
-#include "socketserver.h"
 
 SocketClient::SocketClient()
 	: m_nBufferOffset(0)
@@ -17,6 +16,36 @@ SocketClient::SocketClient()
 SocketClient::~SocketClient()
 {
 
+}
+
+bool SocketClient::Init(const char *pAddress, int nPort)
+{
+	// 创建套接字
+	if (!Create()) return false;
+
+	// 设置非阻塞属性
+	if (!SetNonblock()) return false;
+
+	// 连接服务器
+	if (!Connect(pAddress, nPort)) return false;
+
+	return true;
+}
+
+void SocketClient::Run(void)
+{
+	if (CheckRead())
+	{
+		this->RunRecv();
+		char *pMessage = NULL;
+		while ((pMessage = Prase()))
+			OnMessage(pMessage);
+	}
+
+	if (GetSendSize() && CheckWrite())
+	{
+		this->RunSend();
+	}
 }
 
 char *SocketClient::Prase(void)
@@ -41,12 +70,16 @@ void SocketClient::Send(char *pBuffer, int nLength)
 {
 	if (!pBuffer || nLength <= 0) return ;
 
-	char *pTemp = new char[nLength];
-	memcpy(pTemp, pBuffer, nLength);
+	Header head;
+	int nLen = sizeof(Header);
+	head.nLength = nLength + nLen;
+	char *pTemp = new char[head.nLength];
+	memcpy(pTemp, &head, nLen);
+	memcpy(&pTemp[nLen], pBuffer, nLength);
 
 	SendBuffer *pSendBuffer = new SendBuffer();
 	pSendBuffer->pBuffer = pTemp;
-	pSendBuffer->nLength = nLength;
+	pSendBuffer->nLength = head.nLength;
 	pSendBuffer->nOffset = 0;
 
 	m_lSendBuffers.push_back(pSendBuffer);
@@ -83,5 +116,10 @@ int SocketClient::RunRecv(void)
 
 	if (nRes > 0) m_nBufferOffset += nRes;
 	return nRes;
+}
+
+void SocketClient::OnMessage(char *pBuffer)
+{
+	cout << "Client Father OnMessage." << endl;
 }
 
