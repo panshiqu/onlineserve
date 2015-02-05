@@ -8,18 +8,15 @@
 #ifndef SOCKETSERVER_H_
 #define SOCKETSERVER_H_
 
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-
 #include <vector>
 #include <iostream>
 using namespace std;
 
+#include "socketbase.h"
+
 class SocketClient;
-class SocketServer {
+class SocketServer : public SocketBase
+{
 public:
 	SocketServer();
 	virtual ~SocketServer();
@@ -32,11 +29,6 @@ public:
 	void Run(void);
 
 private:
-	bool SetNonblock(int nSocket);
-	void Close(int nSocket);
-
-private:
-	int m_nSocket;
 	vector<SocketClient *> m_vClient;
 };
 

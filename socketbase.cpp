@@ -8,7 +8,7 @@
 #include "socketbase.h"
 
 SocketBase::SocketBase()
-	: m_socket(INVALID_SOCKET)
+	: m_nSocket(INVALID_SOCKET)
 {
 
 }
@@ -18,128 +18,113 @@ SocketBase::~SocketBase()
 
 }
 
-bool SocketBase::Create(int domain, int type, int protocol)
+bool SocketBase::Create(int nDomain, int nType, int nProtocol)
 {
-	int nReuseaddr = 1;
-
-	if ((m_socket = socket(domain, type, protocol)) != -1)
-	{
-		if (setsockopt(m_socket, SOL_SOCKET, SO_REUSEADDR, &nReuseaddr, sizeof(nReuseaddr)) == -1)
-		{
-			Close();
-			return false;
-		}
-
-		return true;
-	}
-
-	return false;
+	if ((m_nSocket = socket(nDomain, nType, nProtocol)) == INVALID_SOCKET)
+		return false;
+	return true;
 }
 
 void SocketBase::Close(void)
 {
-	if (m_socket != INVALID_SOCKET)
+	if (m_nSocket != INVALID_SOCKET)
 	{
-		shutdown(m_socket, SHUT_RDWR);
-		close(m_socket);
-		m_socket = INVALID_SOCKET;
+		shutdown(m_nSocket, SHUT_RDWR);
+		close(m_nSocket);
+		m_nSocket = INVALID_SOCKET;
 	}
 }
 
-bool SocketBase::Bind(in_port_t port, int address, int domain)
+bool SocketBase::Bind(in_port_t nPort, int nAddress, int nDomain)
 {
-	if (m_socket == INVALID_SOCKET) return false;
+	if (m_nSocket == INVALID_SOCKET) return false;
 
 	struct sockaddr_in addr;
-	addr.sin_family = domain;
-	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = address;
+	addr.sin_family = nDomain;
+	addr.sin_port = htons(nPort);
+	addr.sin_addr.s_addr = nAddress;
 
-	if (bind(m_socket, (struct sockaddr *)&addr, sizeof(addr)) == 0)
+	if (bind(m_nSocket, (struct sockaddr *)&addr, sizeof(addr)) == 0)
 		return true;
 	return false;
 }
 
-bool SocketBase::Bind(in_port_t port, const char *address, int domain)
+bool SocketBase::Bind(in_port_t nPort, const char *pAddress, int nDomain)
 {
-	if (m_socket == INVALID_SOCKET || address == NULL) return false;
+	if (m_nSocket == INVALID_SOCKET || pAddress == NULL) return false;
 
 	struct sockaddr_in addr;
-	addr.sin_family = domain;
-	addr.sin_port = htons(port);
-	inet_pton(AF_INET, address, &(addr.sin_addr));
+	addr.sin_family = nDomain;
+	addr.sin_port = htons(nPort);
+	inet_pton(AF_INET, pAddress, &(addr.sin_addr));
 
-	if (bind(m_socket, (struct sockaddr *)&addr, sizeof(addr)) == 0)
+	if (bind(m_nSocket, (struct sockaddr *)&addr, sizeof(addr)) == 0)
 		return true;
 	return false;
 }
 
-bool SocketBase::Listen(int queue)
+bool SocketBase::Listen(int nQueue)
 {
-	if (m_socket == INVALID_SOCKET) return false;
+	if (m_nSocket == INVALID_SOCKET) return false;
 
-	if (listen(m_socket, queue) == 0)
+	if (listen(m_nSocket, nQueue) == 0)
 		return true;
 	return false;
 }
 
-bool SocketBase::Accept(SocketBase &socket, sockaddr *address, socklen_t *length)
+int SocketBase::Accept(sockaddr *pAddress, socklen_t *pLength)
 {
-	if (m_socket == INVALID_SOCKET) return false;
+	if (m_nSocket == INVALID_SOCKET) return INVALID_SOCKET;
 
-	int sock = INVALID_SOCKET;
-	while ((sock = accept(m_socket, address, length)) == INVALID_SOCKET);
-
-	if (sock == INVALID_SOCKET) return false;
-
-	socket = sock;
-	return true;
+	int nSocket = INVALID_SOCKET;
+	while (((nSocket = accept(m_nSocket, pAddress, pLength)) == INVALID_SOCKET) && (errno == EINTR));
+	return nSocket;
 }
 
-bool SocketBase::Connect(const char *address, in_port_t port)
+bool SocketBase::Connect(const char *pAddress, in_port_t nPort)
 {
-	if (m_socket == INVALID_SOCKET) return false;
+	if (m_nSocket == INVALID_SOCKET) return false;
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	inet_pton(AF_INET, address, &(addr.sin_addr));
+	addr.sin_port = htons(nPort);
+	inet_pton(AF_INET, pAddress, &(addr.sin_addr));
 	if (addr.sin_addr.s_addr == INADDR_NONE)
 	{
 		struct hostent *phe;
-		if ((phe = gethostbyname(address)) == NULL) return false;
+		if ((phe = gethostbyname(pAddress)) == NULL) return false;
 
 		memcpy(&addr.sin_addr, phe->h_addr_list, phe->h_length);
 	}
 
-	int res;
-	while ((res = connect(m_socket, (struct sockaddr *)&addr, sizeof(addr))) != 0);
+	int nRes;
+	while (((nRes = connect(m_nSocket, (struct sockaddr *)&addr, sizeof(addr))) != 0) && (errno == EINTR));
 
-	if (res != 0) return false;
+	if (nRes != 0) return false;
 	return true;
 }
 
-bool SocketBase::Connect(const sockaddr *address, socklen_t length)
+bool SocketBase::Connect(const sockaddr *pAddress, socklen_t nLength)
 {
-	if (m_socket == INVALID_SOCKET) return false;
+	if (m_nSocket == INVALID_SOCKET) return false;
 
-	int res;
-	while ((res = connect(m_socket, address, length)) != 0);
+	int nRes;
+	while (((nRes = connect(m_nSocket, pAddress, nLength)) != 0) && (errno == EINTR));
 
-	if (res != 0) return false;
+	if (nRes != 0) return false;
 	return true;
 }
 
-int SocketBase::Send(const char *buf, size_t length, int flags)
+int SocketBase::Send(const char *pBuffer, size_t nLength, int nFlags)
 {
 	int sends = 0;
 	int hasSend = 0;
 
-	if (m_socket == INVALID_SOCKET || buf == NULL || length <= 0) return -1;
+	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return -1;
 
-	while (length > 0)
+	while (nLength > 0)
 	{
-		while ((sends = send(m_socket, &buf[hasSend], length, flags)) == -1 && errno == EINTR);
+		while ((sends = send(m_nSocket, &pBuffer[hasSend], nLength, nFlags)) == -1 && errno == EINTR);
 		if (sends <= 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -149,7 +134,7 @@ int SocketBase::Send(const char *buf, size_t length, int flags)
 		}
 		else
 		{
-			length -= sends;
+			nLength -= sends;
 			hasSend += sends;
 		}
 	}
@@ -157,23 +142,44 @@ int SocketBase::Send(const char *buf, size_t length, int flags)
 	return hasSend;
 }
 
-int SocketBase::SendTo(const char *buf, size_t length, const sockaddr *toaddress, socklen_t tolength, int flags)
+int SocketBase::SendTo(const char *pBuffer, size_t nLength, const sockaddr *pToAddress, socklen_t nToLength, int nFlags)
 {
 	return true;
 }
 
-int SocketBase::Receive(char *buf, size_t length, int flags)
+int SocketBase::Receive(char *pBuffer, size_t nLength, int nFlags)
 {
 	int res;
 
-	if (m_socket == INVALID_SOCKET || buf == NULL || length <= 0) return -1;
+	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return -1;
 
-	while ((res = recv(m_socket, buf, length, flags)) == -1 && errno == EINTR);
+	while ((res = recv(m_nSocket, pBuffer, nLength, nFlags)) == -1 && errno == EINTR);
 	return res;
 }
 
-int SocketBase::ReceiveFrom(char *buf, size_t length, sockaddr *fromaddress, socklen_t *fromlength, int flags)
+int SocketBase::ReceiveFrom(char *pBuffer, size_t nLength, sockaddr *pFromAddress, socklen_t *pFromLength, int nFlags)
 {
+	return true;
+}
+
+bool SocketBase::SetNonblock(void)
+{
+	// 获取描述符属性
+	int nOptions = fcntl(m_nSocket, F_GETFL);
+	if (nOptions == -1) return false;
+	nOptions |= O_NONBLOCK;
+
+	// 设置非阻塞属性
+	if (fcntl(m_nSocket, F_SETFL, nOptions) == -1) return false;
+	return true;
+}
+
+bool SocketBase::SetReuseaddr(void)
+{
+	// 设置可重用属性
+	int nReuseaddr = 1;
+	if (setsockopt(m_nSocket, SOL_SOCKET, SO_REUSEADDR, &nReuseaddr, sizeof(nReuseaddr)) == -1)
+		return false;
 	return true;
 }
 

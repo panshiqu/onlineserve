@@ -8,9 +8,8 @@
 #include "socketclient.h"
 #include "socketserver.h"
 
-SocketClient::SocketClient(int nSocket)
-	: m_nSocket(nSocket)
-	, m_nBufferOffset(0)
+SocketClient::SocketClient()
+	: m_nBufferOffset(0)
 {
 	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
 }
