@@ -11,7 +11,7 @@ TARGET = hello
 SOURCES = $(wildcard *.c *.cpp ./tinyxml/*.c ./tinyxml/*.cpp)
 OBJS = $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))
 
-%.o: %.c
+%.o:%.c
 	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 %.o:%.cpp

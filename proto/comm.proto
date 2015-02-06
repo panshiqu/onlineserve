@@ -1,0 +1,11 @@
+package comm;
+
+message Login
+{
+	optional int32 AgentID = 1;	// 座席编号
+}
+
+message Logout
+{
+	optional int32 AgentID = 1;	// 座席编号
+}

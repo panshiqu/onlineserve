@@ -26,6 +26,7 @@ typedef struct SENDBUFFER
 typedef struct HEADER
 {
 	int nLength;
+	int nCommond;
 } Header;
 
 #endif /* HEADER_H_ */
