@@ -9,8 +9,11 @@
 #include <thread>
 #include <iostream>
 
-#include "socketserver.h"
-#include "socketclient.h"
+#include "common/socketserver.h"
+#include "common/socketclient.h"
+
+#include "dispatcher.h"
+#include "processer.h"
 
 using namespace std;
 
@@ -86,12 +89,12 @@ void thr_fn2(void)
 
 int main(void)
 {
-	thread t1{bind(thr_fn1)};
-	sleep(1);
-	thread t2{bind(thr_fn2)};
-
-	t1.join();
-	t2.join();
+//	thread t1{bind(thr_fn1)};
+//	sleep(1);
+//	thread t2{bind(thr_fn2)};
+//
+//	t1.join();
+//	t2.join();
 
 	return 0;
 }

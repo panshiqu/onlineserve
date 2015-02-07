@@ -8,28 +8,26 @@
 #ifndef DISPATCHER_H_
 #define DISPATCHER_H_
 
-#include <list>
-#include <mutex>
-#include <iostream>
+#include <functional>
 
-using namespace std;
+#include "common/header.h"
+#include "common/socketserver.h"
 
-class Observer;
-class Dispatcher {
+typedef function<int (void)> MessageCallback;
+
+class Dispatcher : public SocketServer
+{
 public:
+
+	SINGLETON_DECLARATION(Dispatcher)
+
 	Dispatcher();
 	virtual ~Dispatcher();
-	static Dispatcher &GetInstance(void);
 
-	void Register(Observer *pObserver);
-	void UnRegister(Observer *pObserver);
-
-	void AddMessage(char *pBuffer);
-	void Dispatch(void);
+	void Register(int command, MessageCallback &callback);
 
 private:
-	//std::mutex m_mMutex;
-	list<char *> m_lRecvMessages;
+	map<int, MessageCallback> m_mapCallback;
 };
 
 #endif /* DISPATCHER_H_ */

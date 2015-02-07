@@ -7,6 +7,8 @@
 
 #include "dispatcher.h"
 
+SINGLETON_IMPLEMENTATION(Dispatcher)
+
 Dispatcher::Dispatcher()
 {
 
@@ -17,29 +19,8 @@ Dispatcher::~Dispatcher()
 
 }
 
-Dispatcher &Dispatcher::GetInstance(void)
+void Dispatcher::Register(int command, MessageCallback& callback)
 {
-	static Dispatcher instance;
-	return instance;
-}
-
-void Dispatcher::Register(Observer *pObserver)
-{
-
-}
-
-void Dispatcher::UnRegister(Observer *pObserver)
-{
-
-}
-
-void Dispatcher::AddMessage(char *pBuffer)
-{
-
-}
-
-void Dispatcher::Dispatch(void)
-{
-
+	m_mapCallback[command] = callback;
 }
 

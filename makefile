@@ -8,7 +8,7 @@ CFLAGS = -g -std=c++0x -lpthread
 #LIBS += -L -lmysqlclient_r -lmysqlpp
 
 TARGET = hello
-SOURCES = $(wildcard *.c *.cpp ./tinyxml/*.c ./tinyxml/*.cpp)
+SOURCES = $(wildcard *.c *.cpp ./common/*.c ./common/*.cpp)
 OBJS = $(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))
 
 %.o:%.c

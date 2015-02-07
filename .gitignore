@@ -1,0 +1,9 @@
+*.o
+*.pb.h
+*.pb.cc
+*.project
+*.cproject
+
+hello
+
+Debug/
