@@ -19,13 +19,17 @@ Processer::~Processer()
 
 }
 
-int Processer::ProcLogin(void)
+int Processer::ProcLogin(SocketClient *pClient, char *pBuffer)
 {
+	Login login;
+	login.ParseFromString(pBuffer);
+	cout << "ProcLogin: " << login.agentid() << endl;
 	return true;
 }
 
-int Processer::ProcLogout(void)
+int Processer::ProcLogout(SocketClient *pClient, char *pBuffer)
 {
+	cout << "ProcLogout" << endl;
 	return true;
 }
 

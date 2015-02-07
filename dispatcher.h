@@ -10,10 +10,12 @@
 
 #include <functional>
 
+#include "proto/protocol.h"
 #include "common/header.h"
 #include "common/socketserver.h"
+#include "common/socketclient.h"
 
-typedef function<int (void)> MessageCallback;
+typedef function<void (SocketClient *pClient, char *pBuffer)> Callback;
 
 class Dispatcher : public SocketServer
 {
@@ -21,13 +23,19 @@ public:
 
 	SINGLETON_DECLARATION(Dispatcher)
 
+private:
 	Dispatcher();
 	virtual ~Dispatcher();
 
-	void Register(int command, MessageCallback &callback);
+public:
+	void OnMessage(SocketClient *pClient, char *pBuffer);
+	void OnConnected(SocketClient *pClient);
+	void OnDisconnected(SocketClient *pClient);
+
+	void RegisterCallback(void);
 
 private:
-	map<int, MessageCallback> m_mapCallback;
+	map<int, Callback> m_mapCallback;
 };
 
 #endif /* DISPATCHER_H_ */

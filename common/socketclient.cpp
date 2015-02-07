@@ -66,12 +66,13 @@ char *SocketClient::Prase(void)
 	return pMessage;
 }
 
-void SocketClient::Send(char *pBuffer, int nLength)
+void SocketClient::Send(const char *pBuffer, int nLength, int nCommand)
 {
 	if (!pBuffer || nLength <= 0) return ;
 
 	Header head;
 	int nLen = sizeof(Header);
+	head.nCommand = nCommand;
 	head.nLength = nLength + nLen;
 	char *pTemp = new char[head.nLength];
 	memcpy(pTemp, &head, nLen);

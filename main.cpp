@@ -9,6 +9,7 @@
 #include <thread>
 #include <iostream>
 
+#include "proto/protocol.h"
 #include "common/socketserver.h"
 #include "common/socketclient.h"
 
@@ -30,9 +31,9 @@ public:
 		cout << &pBuffer[sizeof(Header)] << endl;
 		delete pBuffer;
 
-		char szBuffer[7];
-		memcpy(szBuffer, "welcome", 7);
-		pClient->Send(szBuffer, 7);
+//		char szBuffer[7];
+//		memcpy(szBuffer, "welcome", 7);
+//		pClient->Send(szBuffer, 7);
 	}
 
 	void OnConnected(SocketClient *pClient)
@@ -65,9 +66,9 @@ void thr_fn1(void)
 {
 	cout << "thr_fn1" << endl;
 
-	MySrv srv;
-	srv.Init(11111);
-	srv.Run();
+	Dispatcher::GetInstance().RegisterCallback();
+	Dispatcher::GetInstance().Init(11111);
+	Dispatcher::GetInstance().Run();
 }
 
 void thr_fn2(void)
@@ -78,23 +79,65 @@ void thr_fn2(void)
 	clt.Init("127.0.0.1", 11111);
 
 	while (true) {
-		char szBuffer[5];
-		memcpy(szBuffer, "hello", 5);
-		clt.Send(szBuffer, 5);
+		Login login;
+		login.set_agentid(1001);
+
+		string str;
+		login.SerializeToString(&str);
+
+		clt.Send(str.c_str(), str.length(), 2);
 
 		clt.Run();
 		sleep(5);
 	}
 }
 
+typedef function<void (void)> CB;
+
+class A
+{
+public:
+	static A &GetInstance()
+	{
+		static A instance;
+		return instance;
+	}
+
+	void A_Func()
+	{
+		cout << "A_Func" << endl;
+	}
+};
+
+class B
+{
+public:
+	void Register()
+	{
+		cb = bind(&A::A_Func, &A::GetInstance());
+	}
+
+	void B_Func()
+	{
+		cb();
+	}
+
+	//A a;
+	CB cb;
+};
+
 int main(void)
 {
-//	thread t1{bind(thr_fn1)};
-//	sleep(1);
-//	thread t2{bind(thr_fn2)};
-//
-//	t1.join();
-//	t2.join();
+	thread t1{bind(thr_fn1)};
+	sleep(1);
+	thread t2{bind(thr_fn2)};
+
+	t1.join();
+	t2.join();
+
+//	B b;
+//	b.Register();
+//	b.B_Func();
 
 	return 0;
 }

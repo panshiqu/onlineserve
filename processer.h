@@ -8,7 +8,9 @@
 #ifndef PROCESSER_H_
 #define PROCESSER_H_
 
+#include "proto/protocol.h"
 #include "common/header.h"
+#include "common/socketclient.h"
 
 class Processer
 {
@@ -19,8 +21,8 @@ public:
 	Processer();
 	virtual ~Processer();
 
-	int ProcLogin(void);
-	int ProcLogout(void);
+	int ProcLogin(SocketClient *pClient, char *pBuffer);
+	int ProcLogout(SocketClient *pClient, char *pBuffer);
 };
 
 #endif /* PROCESSER_H_ */

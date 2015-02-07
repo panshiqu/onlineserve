@@ -22,7 +22,7 @@ public:
 	void Run(void);
 
 	char *Prase(void);
-	void Send(char *pBuffer, int nLength);
+	void Send(const char *pBuffer, int nLength, int nCommand);
 
 	int RunSend(void);
 	int RunRecv(void);
