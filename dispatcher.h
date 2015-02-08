@@ -17,7 +17,7 @@
 
 typedef function<void (SocketClient *pClient, char *pBuffer)> Callback;
 
-class Dispatcher : public SocketServer
+class Dispatcher
 {
 public:
 

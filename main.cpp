@@ -18,7 +18,7 @@
 
 using namespace std;
 
-class MySrv : public SocketServer
+class MySrv
 {
 public:
 	MySrv() {};
@@ -66,9 +66,9 @@ void thr_fn1(void)
 {
 	cout << "thr_fn1" << endl;
 
-	Dispatcher::GetInstance().RegisterCallback();
-	Dispatcher::GetInstance().Init(11111);
-	Dispatcher::GetInstance().Run();
+//	Dispatcher::GetInstance().RegisterCallback();
+//	Dispatcher::GetInstance().Init(11111);
+//	Dispatcher::GetInstance().Run();
 }
 
 void thr_fn2(void)
@@ -85,7 +85,7 @@ void thr_fn2(void)
 		string str;
 		login.SerializeToString(&str);
 
-		clt.Send(str.c_str(), str.length(), 2);
+		clt.SendMessage(str.c_str(), str.length(), 2);
 
 		clt.Run();
 		sleep(5);

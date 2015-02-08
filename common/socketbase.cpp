@@ -72,13 +72,12 @@ bool SocketBase::Listen(int nQueue)
 	return false;
 }
 
-int SocketBase::Accept(sockaddr *pAddress, socklen_t *pLength)
+bool SocketBase::Accept(int &nSocket, sockaddr *pAddress, socklen_t *pLength)
 {
-	if (m_nSocket == INVALID_SOCKET) return INVALID_SOCKET;
+	if (m_nSocket == INVALID_SOCKET) return false;
 
-	int nSocket = INVALID_SOCKET;
 	while (((nSocket = accept(m_nSocket, pAddress, pLength)) == INVALID_SOCKET) && (errno == EINTR));
-	return nSocket;
+	return nSocket == INVALID_SOCKET ? false : true;
 }
 
 bool SocketBase::Connect(const char *pAddress, in_port_t nPort)
@@ -117,29 +116,11 @@ bool SocketBase::Connect(const sockaddr *pAddress, socklen_t nLength)
 
 int SocketBase::Send(const char *pBuffer, size_t nLength, int nFlags)
 {
-	int sends = 0;
-	int hasSend = 0;
+	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return INVALID_SOCKET;
 
-	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return -1;
-
-	while (nLength > 0)
-	{
-		while ((sends = send(m_nSocket, &pBuffer[hasSend], nLength, nFlags)) == -1 && errno == EINTR);
-		if (sends <= 0)
-		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				usleep(10000);
-			else
-				break;
-		}
-		else
-		{
-			nLength -= sends;
-			hasSend += sends;
-		}
-	}
-
-	return hasSend;
+	int nRes;
+	while ((nRes = send(m_nSocket, pBuffer, nLength, nFlags)) == -1 && errno == EINTR);
+	return nRes;
 }
 
 int SocketBase::SendTo(const char *pBuffer, size_t nLength, const sockaddr *pToAddress, socklen_t nToLength, int nFlags)
@@ -149,10 +130,9 @@ int SocketBase::SendTo(const char *pBuffer, size_t nLength, const sockaddr *pToA
 
 int SocketBase::Receive(char *pBuffer, size_t nLength, int nFlags)
 {
+	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return INVALID_SOCKET;
+
 	int nRes;
-
-	if (m_nSocket == INVALID_SOCKET || pBuffer == NULL || nLength <= 0) return -1;
-
 	while ((nRes = recv(m_nSocket, pBuffer, nLength, nFlags)) == -1 && errno == EINTR);
 	return nRes;
 }
@@ -170,6 +150,7 @@ bool SocketBase::CheckRead(void)
 	fd_set fds;
 	struct timeval tv;
 
+	// 检查可读
 	FD_ZERO(&fds);
 	FD_SET(m_nSocket, &fds);
 	memset(&tv, 0, sizeof(tv));
@@ -185,6 +166,7 @@ bool SocketBase::CheckWrite(void)
 	fd_set fds;
 	struct timeval tv;
 
+	// 检查可写
 	FD_ZERO(&fds);
 	FD_SET(m_nSocket, &fds);
 	memset(&tv, 0, sizeof(tv));
@@ -194,6 +176,8 @@ bool SocketBase::CheckWrite(void)
 
 bool SocketBase::SetNonblock(void)
 {
+	if (m_nSocket == INVALID_SOCKET) return false;
+
 	// 获取描述符属性
 	int nOptions = fcntl(m_nSocket, F_GETFL);
 	if (nOptions == -1) return false;
@@ -206,6 +190,8 @@ bool SocketBase::SetNonblock(void)
 
 bool SocketBase::SetReuseaddr(void)
 {
+	if (m_nSocket == INVALID_SOCKET) return false;
+
 	// 设置可重用属性
 	int nReuseaddr = 1;
 	if (setsockopt(m_nSocket, SOL_SOCKET, SO_REUSEADDR, &nReuseaddr, sizeof(nReuseaddr)) == -1)

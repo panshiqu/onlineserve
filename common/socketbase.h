@@ -32,7 +32,7 @@ public:
 	bool Bind(in_port_t nPort, const char *pAddress, int nDomain = AF_INET);
 
 	bool Listen(int nQueue = 5);
-	int Accept(sockaddr *pAddress = NULL, socklen_t *pLength = NULL);
+	bool Accept(int &nSocket, sockaddr *pAddress = NULL, socklen_t *pLength = NULL);
 
 	bool Connect(const char *pAddress, in_port_t nPort);
 	bool Connect(const sockaddr *pAddress, socklen_t nLength);
@@ -43,15 +43,17 @@ public:
 	int Receive(char *pBuffer, size_t nLength, int nFlags = 0);
 	int ReceiveFrom(char *pBuffer, size_t nLength, sockaddr *pFromAddress, socklen_t *pFromLength, int nFlags = 0);
 
+public:
 	bool CheckRead(void);
 	bool CheckWrite(void);
 	bool SetNonblock(void);
 	bool SetReuseaddr(void);
 
-	int GetSocket(void)				{ return m_nSocket; }
-	void SetSocket(int nSocket)	{ m_nSocket = nSocket; }
-
 public:
+	int GetSocket(void)				{ return m_nSocket; }
+	void SetSocket(int nSocket)		{ m_nSocket = nSocket; }
+
+private:
 	int m_nSocket;
 };
 

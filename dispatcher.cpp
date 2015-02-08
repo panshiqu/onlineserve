@@ -22,12 +22,12 @@ Dispatcher::~Dispatcher()
 
 void Dispatcher::OnMessage(SocketClient *pClient, char *pBuffer)
 {
-	Header *pHeader = (Header *)pBuffer;
-	map<int, Callback>::iterator itr = m_mapCallback.find(pHeader->nCommand);
-	if (itr == m_mapCallback.end()) pHeader->nCommand = UNKNOWN;
-
-	char *pMessage = &pBuffer[sizeof(Header)];
-	m_mapCallback[pHeader->nCommand](pClient, pMessage);
+//	Header *pHeader = (Header *)pBuffer;
+//	map<int, Callback>::iterator itr = m_mapCallback.find(pHeader->nCommand);
+//	if (itr == m_mapCallback.end()) pHeader->nCommand = UNKNOWN;
+//
+//	char *pMessage = &pBuffer[sizeof(Header)];
+//	m_mapCallback[pHeader->nCommand](pClient, pMessage);
 }
 
 void Dispatcher::OnConnected(SocketClient *pClient)

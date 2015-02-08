@@ -11,20 +11,18 @@
 #include "socketbase.h"
 
 class SocketClient;
-class SocketServer : public SocketBase
-{
+class SocketDelegate;
+class SocketServer {
 public:
-	SocketServer();
+	SocketServer(SocketDelegate *pDelegate = NULL);
 	virtual ~SocketServer();
-
-	virtual void OnMessage(SocketClient *pClient, char *pBuffer);
-	virtual void OnConnected(SocketClient *pClient);
-	virtual void OnDisconnected(SocketClient *pClient);
 
 	bool Init(int nPort);
 	void Run(void);
 
 private:
+	SocketBase m_hSocket;
+	SocketDelegate *m_pDelegate;
 	vector<SocketClient *> m_vClient;
 };
 
