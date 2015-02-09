@@ -9,43 +9,11 @@
 #include <thread>
 #include <iostream>
 
-#include "proto/protocol.h"
-#include "base/socketserver.h"
-#include "base/socketclient.h"
-
 #include "dispatcher.h"
-#include "processer.h"
+#include "base/socketclient.h"
+#include "proto/protocol.h"
 
 using namespace std;
-
-class MySrv
-{
-public:
-	MySrv() {};
-	virtual ~MySrv() {};
-
-	void OnMessage(SocketClient *pClient, char *pBuffer)
-	{
-		cout << "Server OnMessage." << endl;
-
-		cout << &pBuffer[sizeof(Header)] << endl;
-		delete pBuffer;
-
-//		char szBuffer[7];
-//		memcpy(szBuffer, "welcome", 7);
-//		pClient->Send(szBuffer, 7);
-	}
-
-	void OnConnected(SocketClient *pClient)
-	{
-		cout << "OnConnected." << endl;
-	}
-
-	void OnDisconnected(SocketClient *pClient)
-	{
-		cout << "OnDisconnected." << endl;
-	}
-};
 
 class MyClt : public SocketClient
 {
@@ -65,10 +33,7 @@ public:
 void thr_fn1(void)
 {
 	cout << "thr_fn1" << endl;
-
-//	Dispatcher::GetInstance().RegisterCallback();
-//	Dispatcher::GetInstance().Init(11111);
-//	Dispatcher::GetInstance().Run();
+	Dispatcher::GetInstance().Dispatch();
 }
 
 void thr_fn2(void)
@@ -92,40 +57,6 @@ void thr_fn2(void)
 	}
 }
 
-typedef function<void (void)> CB;
-
-class A
-{
-public:
-	static A &GetInstance()
-	{
-		static A instance;
-		return instance;
-	}
-
-	void A_Func()
-	{
-		cout << "A_Func" << endl;
-	}
-};
-
-class B
-{
-public:
-	void Register()
-	{
-		cb = bind(&A::A_Func, &A::GetInstance());
-	}
-
-	void B_Func()
-	{
-		cb();
-	}
-
-	//A a;
-	CB cb;
-};
-
 int main(void)
 {
 	thread t1{bind(thr_fn1)};
@@ -134,10 +65,6 @@ int main(void)
 
 	t1.join();
 	t2.join();
-
-//	B b;
-//	b.Register();
-//	b.B_Func();
 
 	return 0;
 }
