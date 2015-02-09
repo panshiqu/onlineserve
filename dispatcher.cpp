@@ -6,9 +6,7 @@
  */
 
 #include "dispatcher.h"
-#include "processer.h"
-
-SINGLETON_IMPLEMENTATION(Dispatcher)
+#include "processor.h"
 
 Dispatcher::Dispatcher()
 {
@@ -20,14 +18,15 @@ Dispatcher::~Dispatcher()
 
 }
 
-void Dispatcher::OnMessage(SocketClient *pClient, char *pBuffer)
+void Dispatcher::Dispatch(void)
 {
-//	Header *pHeader = (Header *)pBuffer;
-//	map<int, Callback>::iterator itr = m_mapCallback.find(pHeader->nCommand);
-//	if (itr == m_mapCallback.end()) pHeader->nCommand = UNKNOWN;
-//
-//	char *pMessage = &pBuffer[sizeof(Header)];
-//	m_mapCallback[pHeader->nCommand](pClient, pMessage);
+	// 注册处理回调函数
+	Processor::GetInstance().RegisterCallback();
+
+	// 创建启动服务
+	SocketServer server;
+	server.Init(11111);
+	server.Run();
 }
 
 void Dispatcher::OnConnected(SocketClient *pClient)
@@ -40,9 +39,26 @@ void Dispatcher::OnDisconnected(SocketClient *pClient)
 	cout << "OnDisconnected." << endl;
 }
 
-void Dispatcher::RegisterCallback(void)
+void Dispatcher::OnConnectFailed(SocketClient *pClient)
 {
-	m_mapCallback[AGENT_LOGIN] = bind(&Processer::ProcLogin, &Processer::GetInstance(), placeholders::_1, placeholders::_2);
-	m_mapCallback[AGENT_LOGOUT] = bind(&Processer::ProcLogout, &Processer::GetInstance(), placeholders::_1, placeholders::_2);
+	cout << "OnConnectFailed." << endl;
+}
+
+void Dispatcher::OnMessage(char *pMessage, SocketClient *pClient)
+{
+	// 取消息头
+	Header *pHeader = (Header *)pMessage;
+
+	// 查找处理器
+	map<int, Callback>::iterator itr = m_mapCallback.find(pHeader->nCommand);
+	if (itr == m_mapCallback.end()) pHeader->nCommand = UNKNOWN;
+
+	// 取消息体分发
+	char *pProto = &pMessage[sizeof(Header)];
+	int nLength = pHeader->nLength - sizeof(Header);
+	m_mapCallback[pHeader->nCommand](pProto, nLength, pClient);
+
+	// 释放删除消息
+	delete pMessage;
 }
 

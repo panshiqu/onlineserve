@@ -12,6 +12,8 @@
 #include <list>
 #include <vector>
 #include <iostream>
+#include <functional>
+
 using namespace std;
 
 #ifndef INVALID_SOCKET
@@ -40,6 +42,13 @@ typedef struct HEADER
 
 #define SINGLETON_IMPLEMENTATION(classname) \
 	classname &classname::GetInstance(void) \
+	{	\
+		static classname instance; \
+		return instance; \
+	}
+
+#define SINGLETON(classname) \
+	static classname &GetInstance(void) \
 	{	\
 		static classname instance; \
 		return instance; \

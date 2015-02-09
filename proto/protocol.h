@@ -14,10 +14,10 @@ using namespace comm;
 
 enum PROTOCOL_TYPE {
 	UNKNOWN			= 0,
-	LISTEN				= 1,
+	LISTENING		= 1,
 
 	AGENT_LOGIN		= 2,
-	AGENT_LOGOUT		= 3,
+	AGENT_LOGOUT	= 3,
 };
 
 

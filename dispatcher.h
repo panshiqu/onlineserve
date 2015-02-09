@@ -8,31 +8,38 @@
 #ifndef DISPATCHER_H_
 #define DISPATCHER_H_
 
-#include <functional>
-
+#include "base/header.h"
 #include "proto/protocol.h"
-#include "common/header.h"
-#include "common/socketserver.h"
-#include "common/socketclient.h"
+#include "base/socketserver.h"
+#include "base/socketdelegate.h"
 
-typedef function<void (SocketClient *pClient, char *pBuffer)> Callback;
+typedef function<void (char *pMessage, int nLength, SocketClient *pClient)> Callback;
 
 class Dispatcher
 {
-public:
-
-	SINGLETON_DECLARATION(Dispatcher)
-
 private:
 	Dispatcher();
 	virtual ~Dispatcher();
 
 public:
-	void OnMessage(SocketClient *pClient, char *pBuffer);
-	void OnConnected(SocketClient *pClient);
-	void OnDisconnected(SocketClient *pClient);
+	SINGLETON(Dispatcher)
+	void Dispatch(void);
 
-	void RegisterCallback(void);
+public:
+	// Implementation Socket Connected
+	void OnConnected(SocketClient *pClient = NULL);
+
+	// Implementation Socket Disconnected
+	void OnDisconnected(SocketClient *pClient = NULL);
+
+	// Implementation Socket Connect Failed
+	void OnConnectFailed(SocketClient *pClient = NULL);
+
+	// Implementation Socket Receive Message
+	void OnMessage(char *pMessage, SocketClient *pClient = NULL);
+
+	// Insert Map Register Callback
+	void RegisterCallback(int nCommand, const Callback &cb)	{ m_mapCallback[nCommand] = cb; }
 
 private:
 	map<int, Callback> m_mapCallback;

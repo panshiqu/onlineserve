@@ -16,9 +16,17 @@ public:
 	SocketDelegate();
 	virtual ~SocketDelegate();
 
-	virtual void OnMessage(char *pBuffer, SocketClient *pClient = NULL) {}
+	// Socket Connected
 	virtual void OnConnected(SocketClient *pClient = NULL) {}
+
+	// Socket Disconnected
 	virtual void OnDisconnected(SocketClient *pClient = NULL) {}
+
+	// Socket Connect Failed
+	virtual void OnConnectFailed(SocketClient *pClient = NULL) {}
+
+	// Socket Receive Message
+	virtual void OnMessage(char *pMessage, SocketClient *pClient = NULL) {}
 };
 
 #endif /* SOCKETDELEGATE_H_ */

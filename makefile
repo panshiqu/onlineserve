@@ -9,8 +9,8 @@ CFLAGS = -g -std=c++0x -lpthread -lprotobuf
 
 TARGET = hello
 SOURCES += $(wildcard *.c *.cc *.cpp *.cxx)
+SOURCES += $(wildcard base/*.c base/*.cc base/*.cpp base/*.cxx)
 SOURCES += $(wildcard proto/*.c proto/*.cc proto/*.cpp proto/*.cxx)
-SOURCES += $(wildcard common/*.c common/*.cc common/*.cpp common/*.cxx)
 
 OBJECTS = $(patsubst %.c,%.o,$(patsubst %.cc,%.o,$(patsubst %.cpp,%.o,$(SOURCES))))
 

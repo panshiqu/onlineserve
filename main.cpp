@@ -10,8 +10,8 @@
 #include <iostream>
 
 #include "proto/protocol.h"
-#include "common/socketserver.h"
-#include "common/socketclient.h"
+#include "base/socketserver.h"
+#include "base/socketclient.h"
 
 #include "dispatcher.h"
 #include "processer.h"
