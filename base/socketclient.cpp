@@ -28,19 +28,39 @@ bool SocketClient::Init(const char *pAddress, int nPort)
 	// 设置非阻塞属性
 	if (!m_hSocket.SetNonblock()) return false;
 
-	// 连接服务器
-	if (!m_hSocket.Connect(pAddress, nPort)) return false;
+	// 设置套接字属性
+	m_nPort = nPort;
+	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
+	memcpy(m_szAddress, pAddress, SOCKET_ADDRESS_SIZE);
 
+	// 连接服务器
+	return Connect();
+}
+
+bool SocketClient::Connect(void)
+{
+	// 连接服务器
+	if (!m_hSocket.Connect(m_szAddress, m_nPort))
+	{
+		// 连接失败
+		m_pDelegate->OnConnectFailed();
+		return false;
+	}
+
+	// 连接成功
+	m_pDelegate->OnConnected();
 	return true;
 }
 
 void SocketClient::Run(void)
 {
+	int nRes = 1;
+
 	// 检查可读
 	if (m_hSocket.CheckRead())
 	{
 		// 接收
-		RunRecv();
+		nRes = RunRecv();
 
 		// 解析消息
 		char *pMessage = NULL;
@@ -49,10 +69,24 @@ void SocketClient::Run(void)
 	}
 
 	// 检查可写
-	if (GetSendSize() && m_hSocket.CheckWrite())
+	if ((nRes > 0) && GetSendSize() && m_hSocket.CheckWrite())
 	{
 		// 发送
-		RunSend();
+		nRes = RunSend();
+	}
+
+	if (nRes <= 0)
+	{
+		// 接收发送失败
+		m_pDelegate->OnDisconnected();
+
+		// 断线重连
+		int nTime = 1000;
+		while (!Connect())
+		{
+			nTime = nTime * 10;
+			usleep(nTime);
+		}
 	}
 }
 

@@ -15,7 +15,7 @@
 
 typedef function<void (char *pMessage, int nLength, SocketClient *pClient)> Callback;
 
-class Dispatcher
+class Dispatcher : SocketDelegate
 {
 private:
 	Dispatcher();

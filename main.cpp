@@ -15,18 +15,30 @@
 
 using namespace std;
 
-class MyClt : public SocketClient
+class MyClt : public SocketDelegate
 {
 public:
 	MyClt() {};
 	virtual ~MyClt() {};
 
-	void OnMessage(char *pBuffer)
+	void OnMessage(char *pMessage, SocketClient *pClient)
 	{
 		cout << "Client OnMessage." << endl;
+	}
 
-		cout << &pBuffer[sizeof(Header)] << endl;
-		delete pBuffer;
+	void OnConnected(SocketClient *pClient)
+	{
+		cout << "Client OnConnected." << endl;
+	}
+
+	virtual void OnDisconnected(SocketClient *pClient)
+	{
+		cout << "Client OnDisconnected." << endl;
+	}
+
+	virtual void OnConnectFailed(SocketClient *pClient = NULL)
+	{
+		cout << "Client OnConnectFailed." << endl;
 	}
 };
 
@@ -40,7 +52,8 @@ void thr_fn2(void)
 {
 	cout << "thr_fn2" << endl;
 
-	MyClt clt;
+	MyClt delegate;
+	SocketClient clt(&delegate);
 	clt.Init("127.0.0.1", 11111);
 
 	while (true) {

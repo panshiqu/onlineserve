@@ -20,6 +20,10 @@ using namespace std;
 #define INVALID_SOCKET -1
 #endif
 
+#ifndef SOCKET_ADDRESS_SIZE
+#define SOCKET_ADDRESS_SIZE 20
+#endif
+
 #ifndef SOCKET_READ_BUFFER_SIZE
 #define SOCKET_READ_BUFFER_SIZE 8192
 #endif

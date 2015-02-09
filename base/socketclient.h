@@ -17,6 +17,7 @@ public:
 	virtual ~SocketClient();
 
 	bool Init(const char *pAddress, int nPort);
+	bool Connect(void);
 	void Run(void);
 
 public:
@@ -36,10 +37,12 @@ public:
 	void SetSocket(int nSocket)		{ m_hSocket.SetSocket(nSocket); }
 
 private:
+	int m_nPort;
 	int m_nBufferOffset;
 	SocketBase m_hSocket;
 	SocketDelegate *m_pDelegate;
 	list<SendBuffer *> m_lSendBuffers;
+	char m_szAddress[SOCKET_ADDRESS_SIZE];
 	char m_szRecvBuffers[SOCKET_READ_BUFFER_SIZE];
 };
 

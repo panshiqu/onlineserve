@@ -24,7 +24,7 @@ void Dispatcher::Dispatch(void)
 	Processor::GetInstance().RegisterCallback();
 
 	// 创建启动服务
-	SocketServer server;
+	SocketServer server(this);
 	server.Init(11111);
 	server.Run();
 }
