@@ -9,9 +9,12 @@
 #include "socketdelegate.h"
 
 SocketClient::SocketClient(SocketDelegate *pDelegate)
-	: m_pDelegate(pDelegate)
+	: m_nPort(0)
+	, m_nStatus(0)
 	, m_nBufferOffset(0)
+	, m_pDelegate(pDelegate)
 {
+	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
 	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
 }
 
@@ -30,8 +33,7 @@ bool SocketClient::Init(const char *pAddress, int nPort)
 
 	// 设置套接字属性
 	m_nPort = nPort;
-	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
-	memcpy(m_szAddress, pAddress, SOCKET_ADDRESS_SIZE);
+	memcpy(m_szAddress, pAddress, strlen(pAddress));
 
 	// 连接服务器
 	return Connect();
@@ -39,55 +41,116 @@ bool SocketClient::Init(const char *pAddress, int nPort)
 
 bool SocketClient::Connect(void)
 {
-	// 连接服务器
-	if (!m_hSocket.Connect(m_szAddress, m_nPort))
-	{
-		// 连接失败
-		m_pDelegate->OnConnectFailed();
-		return false;
-	}
+	// 请求连接服务器
+	if (!m_hSocket.Connect(m_szAddress, m_nPort)) return false;
 
-	// 连接成功
-	m_pDelegate->OnConnected();
+	// 设置正在连接状态
+	m_nStatus = SOCKET_CONNECTING;
 	return true;
 }
 
 void SocketClient::Run(void)
 {
-	int nRes = 1;
-
-	// 检查可读
-	if (m_hSocket.CheckRead())
+	switch (m_nStatus)
 	{
-		// 接收
-		nRes = RunRecv();
-
-		// 解析消息
-		char *pMessage = NULL;
-		while (PraseMessage(pMessage))
-			m_pDelegate->OnMessage(pMessage);
-	}
-
-	// 检查可写
-	if ((nRes > 0) && GetSendSize() && m_hSocket.CheckWrite())
+	case SOCKET_CONNECTED:
 	{
-		// 发送
-		nRes = RunSend();
-	}
-
-	if (nRes <= 0)
-	{
-		// 接收发送失败
-		m_pDelegate->OnDisconnected();
-
-		// 断线重连
-		int nTime = 1000;
-		while (!Connect())
+		// 已连接检查可读
+		if (m_hSocket.CheckReadable())
 		{
-			nTime = nTime * 10;
-			usleep(nTime);
+			// 接收
+			RunRecv();
+
+			// 解析消息
+			char *pMessage = NULL;
+			while ((pMessage = PraseMessage()))
+				m_pDelegate->OnMessage(pMessage);
+		}
+
+		// 已连接检查可写
+		if (GetSendSize() && m_hSocket.CheckWritable())
+		{
+			// 发送
+			RunSend();
 		}
 	}
+	break;
+
+	case SOCKET_CONNECTING:
+	{
+		// 连接中检查连接状态
+		switch (m_hSocket.CheckConnected())
+		{
+		case SOCKET_CONNECTED:
+		{
+			// 连接成功
+			m_nStatus = SOCKET_CONNECTED;
+			m_pDelegate->OnConnected();
+		}
+		break;
+
+		case SOCKET_CONNECTFAILED:
+		{
+			// 连接失败
+			m_nStatus = SOCKET_CONNECTFAILED;
+			m_pDelegate->OnConnectFailed();
+		}
+		break;
+
+		default:
+			assert(false);
+			break;
+		}
+	}
+	break;
+
+	case SOCKET_DISCONNECTED:
+	{
+		// 断开连接
+		m_nStatus = SOCKET_DISCONNECTED;
+		m_pDelegate->OnDisconnected();
+	}
+	break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+//	int nRes = 1;
+
+//	// 检查可读
+//	if (m_hSocket.CheckReadable())
+//	{
+//		// 接收
+//		nRes = RunRecv();
+//
+//		// 解析消息
+//		char *pMessage = NULL;
+//		while ((pMessage = PraseMessage()))
+//			m_pDelegate->OnMessage(pMessage);
+//	}
+//
+//	// 检查可写
+//	if ((nRes > 0) && GetSendSize() && m_hSocket.CheckWritable())
+//	{
+//		// 发送
+//		nRes = RunSend();
+//	}
+
+//	if (nRes <= 0)
+//	{
+//		// 接收发送失败
+//		m_pDelegate->OnDisconnected();
+//
+//		// 断线重连
+//		int nTime = 1000;
+//		while (!Connect())
+//		{
+//			nTime = nTime * 10;
+//			usleep(nTime);
+//		}
+//	}
 }
 
 int SocketClient::RunSend(void)
@@ -128,26 +191,26 @@ int SocketClient::RunRecv(void)
 	return nRes;
 }
 
-bool SocketClient::PraseMessage(char *pMessage)
+char *SocketClient::PraseMessage(void)
 {
 	// 缓存无消息
-	if (m_nBufferOffset <= 0) return false;
+	if (m_nBufferOffset <= 0) return NULL;
 
 	// 缓存消息不完整
 	Header *pHeader = (Header *)m_szRecvBuffers;
 	int nLength = pHeader->nLength;
 	if (nLength > m_nBufferOffset)
-		return false;
+		return NULL;
 
 	// 消息拷贝
-	pMessage = new char[nLength];
+	char *pMessage = new char[nLength];
 	memcpy(pMessage, m_szRecvBuffers, nLength);
 
 	// 数据前移
 	int nCopyLength = m_nBufferOffset - nLength < nLength ? nLength : m_nBufferOffset - nLength;
 	memcpy(&m_szRecvBuffers[0], &m_szRecvBuffers[nLength], nCopyLength);
 	m_nBufferOffset -= nLength;
-	return true;
+	return pMessage;
 }
 
 void SocketClient::SendMessage(const char *pBuffer, int nLength, int nCommand)

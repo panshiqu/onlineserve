@@ -72,11 +72,11 @@ void thr_fn2(void)
 
 int main(void)
 {
-	thread t1{bind(thr_fn1)};
-	sleep(1);
+//	thread t1{bind(thr_fn1)};
+//	sleep(1);
 	thread t2{bind(thr_fn2)};
 
-	t1.join();
+//	t1.join();
 	t2.join();
 
 	return 0;

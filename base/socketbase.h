@@ -44,10 +44,11 @@ public:
 	int ReceiveFrom(char *pBuffer, size_t nLength, sockaddr *pFromAddress, socklen_t *pFromLength, int nFlags = 0);
 
 public:
-	bool CheckRead(void);
-	bool CheckWrite(void);
 	bool SetNonblock(void);
 	bool SetReuseaddr(void);
+	bool CheckReadable(void);
+	bool CheckWritable(void);
+	int CheckConnected(void);
 
 public:
 	int GetSocket(void)				{ return m_nSocket; }

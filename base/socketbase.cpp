@@ -96,21 +96,14 @@ bool SocketBase::Connect(const char *pAddress, in_port_t nPort)
 		memcpy(&addr.sin_addr, phe->h_addr_list, phe->h_length);
 	}
 
-	int nRes;
-	while (((nRes = connect(m_nSocket, (struct sockaddr *)&addr, sizeof(addr))) != 0) && (errno == EINTR));
-
-	if (nRes != 0) return false;
+	while ((connect(m_nSocket, (struct sockaddr *)&addr, sizeof(addr)) != 0) && (errno == EINTR));
 	return true;
 }
 
 bool SocketBase::Connect(const sockaddr *pAddress, socklen_t nLength)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
-
-	int nRes;
-	while (((nRes = connect(m_nSocket, pAddress, nLength)) != 0) && (errno == EINTR));
-
-	if (nRes != 0) return false;
+	while ((connect(m_nSocket, pAddress, nLength) != 0) && (errno == EINTR));
 	return true;
 }
 
@@ -142,38 +135,6 @@ int SocketBase::ReceiveFrom(char *pBuffer, size_t nLength, sockaddr *pFromAddres
 	return true;
 }
 
-bool SocketBase::CheckRead(void)
-{
-	if (m_nSocket == INVALID_SOCKET) return false;
-
-	int nRes;
-	fd_set fds;
-	struct timeval tv;
-
-	// 检查可读
-	FD_ZERO(&fds);
-	FD_SET(m_nSocket, &fds);
-	memset(&tv, 0, sizeof(tv));
-	while(((nRes = select(m_nSocket+1, &fds, NULL, NULL, &tv)) == -1) && (errno == EINTR));
-	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
-}
-
-bool SocketBase::CheckWrite(void)
-{
-	if (m_nSocket == INVALID_SOCKET) return false;
-
-	int nRes;
-	fd_set fds;
-	struct timeval tv;
-
-	// 检查可写
-	FD_ZERO(&fds);
-	FD_SET(m_nSocket, &fds);
-	memset(&tv, 0, sizeof(tv));
-	while(((nRes = select(m_nSocket+1, NULL, &fds, NULL, &tv)) == -1) && (errno == EINTR));
-	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
-}
-
 bool SocketBase::SetNonblock(void)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
@@ -197,5 +158,57 @@ bool SocketBase::SetReuseaddr(void)
 	if (setsockopt(m_nSocket, SOL_SOCKET, SO_REUSEADDR, &nReuseaddr, sizeof(nReuseaddr)) == -1)
 		return false;
 	return true;
+}
+
+bool SocketBase::CheckReadable(void)
+{
+	if (m_nSocket == INVALID_SOCKET) return false;
+
+	int nRes;
+	fd_set fds;
+	struct timeval tv;
+
+	// 检查可读
+	FD_ZERO(&fds);
+	FD_SET(m_nSocket, &fds);
+	memset(&tv, 0, sizeof(tv));
+	while(((nRes = select(m_nSocket+1, &fds, NULL, NULL, &tv)) == -1) && (errno == EINTR));
+	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
+}
+
+bool SocketBase::CheckWritable(void)
+{
+	if (m_nSocket == INVALID_SOCKET) return false;
+
+	int nRes;
+	fd_set fds;
+	struct timeval tv;
+
+	// 检查可写
+	FD_ZERO(&fds);
+	FD_SET(m_nSocket, &fds);
+	memset(&tv, 0, sizeof(tv));
+	while(((nRes = select(m_nSocket+1, NULL, &fds, NULL, &tv)) == -1) && (errno == EINTR));
+	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
+}
+
+int SocketBase::CheckConnected(void)
+{
+	// 检查可写
+	if (CheckWritable())
+	{
+		// 连接状态
+		int nError;
+		socklen_t nLength = sizeof(nError);
+		if (getsockopt(m_nSocket, SOL_SOCKET, SO_ERROR, &nError, &nLength) == -1)
+			return SOCKET_CONNECTFAILED;
+
+		if (nError == ECONNREFUSED || nError == ETIMEDOUT)
+			return SOCKET_CONNECTFAILED;
+
+		return SOCKET_CONNECTED;
+	}
+
+	return SOCKET_CONNECTING;
 }
 

@@ -78,7 +78,7 @@ void SocketServer::Run(void)
 		}
 
 		// Select轮询
-		while ((select(nMaxFD+1, &readSet, &writeSet, NULL, NULL) == -1) && (errno == EINTR))
+		while ((select(nMaxFD+1, &readSet, &writeSet, NULL, NULL) == -1) && (errno == EINTR));
 
 		// 监听套接字可读
 		if (FD_ISSET(m_hSocket.GetSocket(), &readSet))
@@ -123,7 +123,7 @@ void SocketServer::Run(void)
 
 				// 解析消息
 				char *pMessage = NULL;
-				while (pClient->PraseMessage(pMessage))
+				while ((pMessage = pClient->PraseMessage()))
 					m_pDelegate->OnMessage(pMessage, pClient);
 			}
 

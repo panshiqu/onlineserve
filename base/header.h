@@ -14,6 +14,8 @@
 #include <iostream>
 #include <functional>
 
+#include <assert.h>
+
 using namespace std;
 
 #ifndef INVALID_SOCKET
@@ -28,6 +30,16 @@ using namespace std;
 #define SOCKET_READ_BUFFER_SIZE 8192
 #endif
 
+enum SOCKET_STATUS
+{
+	SOCKET_CLOSED				= 0,
+	SOCKET_CONNECTED			= 1,
+	SOCKET_CONNECTING			= 2,
+	SOCKET_DISCONNECTED		= 3,
+	SOCKET_CONNECTFAILED		= 4,
+	SOCKET_CONNECTTIMEOUT	= 5,
+};
+
 typedef struct SENDBUFFER
 {
 	char *pBuffer;
@@ -40,16 +52,6 @@ typedef struct HEADER
 	int nLength;
 	int nCommand;
 } Header;
-
-#define SINGLETON_DECLARATION(classname) \
-	static classname &GetInstance(void);
-
-#define SINGLETON_IMPLEMENTATION(classname) \
-	classname &classname::GetInstance(void) \
-	{	\
-		static classname instance; \
-		return instance; \
-	}
 
 #define SINGLETON(classname) \
 	static classname &GetInstance(void) \
