@@ -55,11 +55,13 @@ void SocketClient::Run(void)
 	{
 	case SOCKET_CONNECTED:
 	{
+		int nRes = 1;
+
 		// 已连接检查可读
 		if (m_hSocket.CheckReadable())
 		{
 			// 接收
-			RunRecv();
+			nRes = RunRecv();
 
 			// 解析消息
 			char *pMessage = NULL;
@@ -68,10 +70,18 @@ void SocketClient::Run(void)
 		}
 
 		// 已连接检查可写
-		if (GetSendSize() && m_hSocket.CheckWritable())
+		if ((nRes > 0) && GetSendSize() && m_hSocket.CheckWritable())
 		{
 			// 发送
-			RunSend();
+			nRes = RunSend();
+		}
+
+		// 接收发送失败
+		if (nRes <= 0)
+		{
+			// 连接断开
+			m_nStatus = SOCKET_DISCONNECTED;
+			m_pDelegate->OnDisconnected();
 		}
 	}
 	break;
@@ -97,6 +107,12 @@ void SocketClient::Run(void)
 		}
 		break;
 
+		case SOCKET_CONNECTING:
+		{
+			// 连接超时
+		}
+		break;
+
 		default:
 			assert(false);
 			break;
@@ -106,9 +122,7 @@ void SocketClient::Run(void)
 
 	case SOCKET_DISCONNECTED:
 	{
-		// 断开连接
-		m_nStatus = SOCKET_DISCONNECTED;
-		m_pDelegate->OnDisconnected();
+		// 自动重连
 	}
 	break;
 
