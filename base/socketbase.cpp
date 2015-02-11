@@ -7,8 +7,8 @@
 
 #include "socketbase.h"
 
-SocketBase::SocketBase()
-	: m_nSocket(INVALID_SOCKET)
+SocketBase::SocketBase(int nSocket)
+	: m_nSocket(nSocket)
 {
 
 }
@@ -96,14 +96,21 @@ bool SocketBase::Connect(const char *pAddress, in_port_t nPort)
 		memcpy(&addr.sin_addr, phe->h_addr_list, phe->h_length);
 	}
 
-	while ((connect(m_nSocket, (struct sockaddr *)&addr, sizeof(addr)) != 0) && (errno == EINTR));
+	int nRes;
+	while (((nRes = connect(m_nSocket, (struct sockaddr *)&addr, sizeof(addr))) != 0) && (errno == EINTR));
+
+	if (nRes != 0 && errno != EINPROGRESS) return false;
 	return true;
 }
 
 bool SocketBase::Connect(const sockaddr *pAddress, socklen_t nLength)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
-	while ((connect(m_nSocket, pAddress, nLength) != 0) && (errno == EINTR));
+
+	int nRes;
+	while (((nRes = (connect(m_nSocket, pAddress, nLength))) != 0) && (errno == EINTR));
+
+	if (nRes != 0 && errno != EINPROGRESS) return false;
 	return true;
 }
 
@@ -203,6 +210,7 @@ int SocketBase::CheckConnected(void)
 		if (getsockopt(m_nSocket, SOL_SOCKET, SO_ERROR, &nError, &nLength) == -1)
 			return SOCKET_CONNECTFAILED;
 
+		// 连接拒绝或超时
 		if (nError == ECONNREFUSED || nError == ETIMEDOUT)
 			return SOCKET_CONNECTFAILED;
 

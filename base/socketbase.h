@@ -22,7 +22,7 @@
 
 class SocketBase {
 public:
-	SocketBase();
+	SocketBase(int nSocket = INVALID_SOCKET);
 	virtual ~SocketBase();
 
 	bool Create(int nDomain = AF_INET, int nType = SOCK_STREAM, int nProtocol = IPPROTO_TCP);

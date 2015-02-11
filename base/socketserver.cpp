@@ -17,14 +17,14 @@ SocketServer::SocketServer(SocketDelegate *pDelegate)
 
 SocketServer::~SocketServer()
 {
-	// 清空收发套接字
-	for (auto pClient : m_vClient)
-	{
-		pClient->Close();
-		delete pClient;
-	}
+	// 关闭监听套接字
+	m_hSocket.Close();
 
-	m_vClient.clear();
+	// 清空收发套接字
+	for (auto pClient : m_vClients)
+		delete pClient;
+
+	m_vClients.clear();
 }
 
 bool SocketServer::Init(int nPort)
@@ -61,9 +61,9 @@ void SocketServer::Run(void)
 		nMaxFD = m_hSocket.GetSocket();
 		FD_SET(m_hSocket.GetSocket(), &readSet);
 
-		for (size_t i = 0; i < m_vClient.size(); i++)
+		for (size_t i = 0; i < m_vClients.size(); i++)
 		{
-			SocketClient *pClient = m_vClient[i];
+			SocketClient *pClient = m_vClients[i];
 			int nSocket = pClient->GetSocket();
 
 			// 确定最大套接字描述符
@@ -91,28 +91,21 @@ void SocketServer::Run(void)
 			if (m_hSocket.Accept(nSocket, (struct sockaddr *)&addr, &length))
 			{
 				// 创建收发套接字
-				SocketClient *pClient = new SocketClient();
-				pClient->SetSocket(nSocket);
-
-				// 设置非阻塞
-				if (pClient->SetNonblock())
-				{
-					m_vClient.push_back(pClient);
-					m_pDelegate->OnConnected(pClient);
-				}
+				SocketClient *pClient = new SocketClient(nSocket);
+				if (!pClient->SetNonblock()) delete pClient;
 				else
 				{
-					pClient->Close();
-					delete pClient;
+					m_vClients.push_back(pClient);
+					m_pDelegate->OnConnected(pClient);
 				}
 			}
 		}
 
 		// 遍历收发套接字确定是否可读写
-		for (size_t i = 0; i < m_vClient.size(); i++)
+		for (size_t i = 0; i < m_vClients.size(); i++)
 		{
 			int nRes = 1;
-			SocketClient *pClient = m_vClient[i];
+			SocketClient *pClient = m_vClients[i];
 			int nSocket = pClient->GetSocket();
 
 			// 检查可读
@@ -137,9 +130,8 @@ void SocketServer::Run(void)
 			if (nRes <= 0)
 			{
 				// 接收发送失败
-				m_vClient.erase(m_vClient.begin()+i);
+				m_vClients.erase(m_vClients.begin()+i);
 				m_pDelegate->OnDisconnected(pClient);
-				pClient->Close();
 				delete pClient;
 			}
 		}

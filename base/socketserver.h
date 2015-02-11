@@ -14,16 +14,16 @@ class SocketClient;
 class SocketDelegate;
 class SocketServer {
 public:
-	SocketServer(SocketDelegate *pDelegate = NULL);
+	SocketServer(SocketDelegate *pDelegate);
 	virtual ~SocketServer();
 
 	bool Init(int nPort);
 	void Run(void);
 
 private:
-	SocketBase m_hSocket;
-	SocketDelegate *m_pDelegate;
-	vector<SocketClient *> m_vClient;
+	SocketBase m_hSocket;						// 套接字句柄
+	vector<SocketClient *> m_vClients;		// 收发套接字
+	SocketDelegate *m_pDelegate = NULL;		// 套接字代理
 };
 
 #endif /* SOCKETSERVER_H_ */

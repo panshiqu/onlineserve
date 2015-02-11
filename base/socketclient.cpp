@@ -8,19 +8,36 @@
 #include "socketclient.h"
 #include "socketdelegate.h"
 
-SocketClient::SocketClient(SocketDelegate *pDelegate)
-	: m_nPort(0)
-	, m_nStatus(0)
-	, m_nBufferOffset(0)
-	, m_pDelegate(pDelegate)
+SocketClient::SocketClient()
 {
-	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
-	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
+
+}
+
+SocketClient::SocketClient(int nSocket)
+	: m_hSocket(nSocket)
+{
+
+}
+
+SocketClient::SocketClient(SocketDelegate *pDelegate)
+	: m_pDelegate(pDelegate)
+{
+
 }
 
 SocketClient::~SocketClient()
 {
+	// 关闭收发套接字
+	m_hSocket.Close();
 
+	// 清空发送缓存队列
+	for (auto pSendBuffer : m_lSendBuffers)
+	{
+		delete pSendBuffer->pBuffer;
+		delete pSendBuffer;
+	}
+
+	m_lSendBuffers.clear();
 }
 
 bool SocketClient::Init(const char *pAddress, int nPort)
@@ -35,21 +52,13 @@ bool SocketClient::Init(const char *pAddress, int nPort)
 	m_nPort = nPort;
 	memcpy(m_szAddress, pAddress, strlen(pAddress));
 
-	// 连接服务器
-	return Connect();
-}
-
-bool SocketClient::Connect(void)
-{
 	// 请求连接服务器
-	if (!m_hSocket.Connect(m_szAddress, m_nPort)) return false;
-
-	// 设置正在连接状态
+	m_hSocket.Connect(m_szAddress, m_nPort);
 	m_nStatus = SOCKET_CONNECTING;
 	return true;
 }
 
-void SocketClient::Run(void)
+bool SocketClient::Run(void)
 {
 	switch (m_nStatus)
 	{
@@ -104,6 +113,7 @@ void SocketClient::Run(void)
 			// 连接失败
 			m_nStatus = SOCKET_CONNECTFAILED;
 			m_pDelegate->OnConnectFailed();
+			return false;
 		}
 		break;
 
@@ -123,6 +133,7 @@ void SocketClient::Run(void)
 	case SOCKET_DISCONNECTED:
 	{
 		// 自动重连
+		return false;
 	}
 	break;
 
@@ -131,40 +142,7 @@ void SocketClient::Run(void)
 		break;
 	}
 
-//	int nRes = 1;
-
-//	// 检查可读
-//	if (m_hSocket.CheckReadable())
-//	{
-//		// 接收
-//		nRes = RunRecv();
-//
-//		// 解析消息
-//		char *pMessage = NULL;
-//		while ((pMessage = PraseMessage()))
-//			m_pDelegate->OnMessage(pMessage);
-//	}
-//
-//	// 检查可写
-//	if ((nRes > 0) && GetSendSize() && m_hSocket.CheckWritable())
-//	{
-//		// 发送
-//		nRes = RunSend();
-//	}
-
-//	if (nRes <= 0)
-//	{
-//		// 接收发送失败
-//		m_pDelegate->OnDisconnected();
-//
-//		// 断线重连
-//		int nTime = 1000;
-//		while (!Connect())
-//		{
-//			nTime = nTime * 10;
-//			usleep(nTime);
-//		}
-//	}
+	return true;
 }
 
 int SocketClient::RunSend(void)

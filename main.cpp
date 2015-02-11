@@ -56,7 +56,7 @@ void thr_fn2(void)
 	SocketClient clt(&delegate);
 	clt.Init("127.0.0.1", 11111);
 
-	while (true) {
+	while (clt.Run()) {
 		Login login;
 		login.set_agentid(1001);
 
@@ -65,7 +65,6 @@ void thr_fn2(void)
 
 		clt.SendMessage(str.c_str(), str.length(), 2);
 
-		clt.Run();
 		sleep(5);
 	}
 }
