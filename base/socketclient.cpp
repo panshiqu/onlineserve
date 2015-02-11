@@ -205,16 +205,15 @@ char *SocketClient::PraseMessage(void)
 	return pMessage;
 }
 
-void SocketClient::SendMessage(const char *pBuffer, int nLength, int nCommand)
+void SocketClient::SendMessage(const char *pBuffer, int nLength, int nCommand, int nErrorCode)
 {
-	// 非法调用
-	if (!pBuffer || nLength <= 0) return ;
-
 	// 创建消息头
 	Header head;
 	int nLen = sizeof(Header);
-	head.nCommand = nCommand;
 	head.nLength = nLength + nLen;
+	head.nCommand = nCommand;
+	head.nErrorCode = nErrorCode;
+	cout << "CMD: " << nCommand << "Length: " << head.nLength << "ERR: " << nErrorCode << endl;
 
 	// 创建发送临时缓存
 	char *pTemp = new char[head.nLength];

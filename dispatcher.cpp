@@ -56,7 +56,11 @@ void Dispatcher::OnMessage(char *pMessage, SocketClient *pClient)
 	// 取消息体分发
 	char *pProto = &pMessage[sizeof(Header)];
 	int nLength = pHeader->nLength - sizeof(Header);
-	m_mapCallback[pHeader->nCommand](pProto, nLength, pClient);
+	int nRes = m_mapCallback[pHeader->nCommand](pProto, nLength, pClient);
+
+	// 出错直接回复
+	if (nRes != ERROR_SUCCEED)
+		pClient->SendMessage("", 0, pHeader->nCommand+1, nRes);
 
 	// 释放删除消息
 	delete pMessage;

@@ -25,14 +25,14 @@ public:
 	/*
 	 * 系统消息操作
 	 */
-	void ProcUnknown(char *pMessage, int nLength, SocketClient *pClient);
-	void ProcListening(char *pMessage, int nLength, SocketClient *pClient);
+	int ProcUnknown(char *pMessage, int nLength, SocketClient *pClient);
+	int ProcListening(char *pMessage, int nLength, SocketClient *pClient);
 
 	/*
 	 * 座席相关消息操作
 	 */
-	void ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient);
-	void ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClient);
+	int ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient);
+	int ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClient);
 };
 
 #endif /* PROCESSOR_H_ */

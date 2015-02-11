@@ -13,7 +13,7 @@
 #include "base/socketserver.h"
 #include "base/socketdelegate.h"
 
-typedef function<void (char *pMessage, int nLength, SocketClient *pClient)> Callback;
+typedef function<int (char *pMessage, int nLength, SocketClient *pClient)> Callback;
 
 class Dispatcher : SocketDelegate
 {

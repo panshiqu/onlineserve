@@ -7,6 +7,7 @@
 
 #include "processor.h"
 #include "dispatcher.h"
+#include "agentmain.h"
 
 Processor::Processor()
 {
@@ -26,25 +27,42 @@ void Processor::RegisterCallback(void)
 	Dispatcher::GetInstance().RegisterCallback(AGENT_LOGOUT, bind(&Processor::ProcAgentLogout, &Processor::GetInstance(), placeholders::_1, placeholders::_2, placeholders::_3));
 }
 
-void Processor::ProcUnknown(char *pMessage, int nLength, SocketClient *pClient)
+int Processor::ProcUnknown(char *pMessage, int nLength, SocketClient *pClient)
 {
 
 }
 
-void Processor::ProcListening(char *pMessage, int nLength, SocketClient *pClient)
+int Processor::ProcListening(char *pMessage, int nLength, SocketClient *pClient)
 {
 
 }
 
-void Processor::ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient)
+int Processor::ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient)
 {
-	Login login;
-	login.ParseFromString(pMessage);
-	cout << "ProcLogin: " << login.agentid() << endl;
+	// 解析消息
+	ReqLogin req;
+	ResLogin res;
+	req.ParseFromArray(pMessage, nLength);
+
+	// 插入座席失败
+	if (!AgentMain::GetInstance().InsertAgent(req.aid()))
+		return ERROR_AGENT_LOGIN;
+
+	cout << "InsertAgent Succeed." << endl;
+
+	// 设置回复
+	res.set_aid(req.aid());
+
+	// 发送回复
+	char szMessage[res.ByteSize()];
+	res.SerializeToArray(szMessage, res.ByteSize());
+	pClient->SendMessage(szMessage, res.ByteSize(), AGENT_LOGIN, 0);
+	return ERROR_SUCCEED;
 }
 
-void Processor::ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClient)
+int Processor::ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClient)
 {
 	cout << "ProcLogout: " << endl;
+	return ERROR_SUCCEED;
 }
 

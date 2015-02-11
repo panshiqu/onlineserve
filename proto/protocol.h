@@ -12,7 +12,7 @@
 
 using namespace comm;
 
-enum PROTOCOL_TYPE {
+enum COMMAND_TYPE {
 	UNKNOWN			= 0,
 	LISTENING		= 1,
 
@@ -20,6 +20,13 @@ enum PROTOCOL_TYPE {
 	AGENT_LOGOUT	= 3,
 };
 
+enum ERROR_CODE
+{
+	ERROR_SUCCEED		= 0,		// 成功
+	ERROR_ILLEGAL		= 1,		// 非法
 
+	// 座席相关
+	ERROR_AGENT_LOGIN	= 101,	// 重复登陆
+};
 
 #endif /* PROTO_PROTOCOL_H_ */

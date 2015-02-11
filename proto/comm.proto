@@ -1,11 +1,21 @@
 package comm;
 
-message Login
+message ReqLogin
 {
-	optional int32 AgentID = 1;	// 座席编号
+	required int32 aid = 1;		// 座席编号
 }
 
-message Logout
+message ResLogin
 {
-	optional int32 AgentID = 1;	// 座席编号
+	required int32 aid = 1;		// 座席编号
+}
+
+message ReqLogout
+{
+	required int32 aid = 1;		// 座席编号
+}
+
+message ResLogout
+{
+	
 }

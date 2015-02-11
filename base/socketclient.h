@@ -26,7 +26,7 @@ public:
 	int RunRecv(void);
 
 	char *PraseMessage(void);
-	void SendMessage(const char *pBuffer, int nLength, int nCommand);
+	void SendMessage(const char *pBuffer, int nLength, int nCommand, int nErrorCode);
 
 public:
 	int GetSocket(void)				{ return m_hSocket.GetSocket(); }

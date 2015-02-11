@@ -24,6 +24,10 @@ public:
 	void OnMessage(char *pMessage, SocketClient *pClient)
 	{
 		cout << "Client OnMessage." << endl;
+		Header *pHeader = (Header *)pMessage;
+		ResLogin login;
+		login.ParseFromString(&pMessage[sizeof(Header)]);
+		cout << "Client AgentID: " << login.aid() << endl;
 	}
 
 	void OnConnected(SocketClient *pClient)
@@ -57,13 +61,13 @@ void thr_fn2(void)
 	clt.Init("127.0.0.1", 11111);
 
 	while (clt.Run()) {
-		Login login;
-		login.set_agentid(1001);
+		ReqLogin login;
+		login.set_aid(1001);
 
 		string str;
 		login.SerializeToString(&str);
 
-		clt.SendMessage(str.c_str(), str.length(), 2);
+		clt.SendMessage(str.c_str(), str.length(), 2, 0);
 
 		sleep(5);
 	}
@@ -71,11 +75,15 @@ void thr_fn2(void)
 
 int main(void)
 {
-//	thread t1{bind(thr_fn1)};
-//	sleep(1);
+//	char sz[0];
+//	cout << sizeof(sz) << endl;
+//	cout << sz << endl;
+
+	thread t1{bind(thr_fn1)};
+	sleep(1);
 	thread t2{bind(thr_fn2)};
 
-//	t1.join();
+	t1.join();
 	t2.join();
 
 	return 0;
