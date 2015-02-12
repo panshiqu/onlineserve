@@ -21,6 +21,9 @@ private:
 public:
 	SINGLETON(Processor)
 	void RegisterCallback(void);
+	void SendMessage(SocketClient *pClient,
+			google::protobuf::Message &Proto,
+			int nCommand, int nErrorCode);
 
 	/*
 	 * 系统消息操作
@@ -33,6 +36,7 @@ public:
 	 */
 	int ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient);
 	int ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClient);
+	int ProcAgentChat(char *pMessage, int nLength, SocketClient *pClient);
 };
 
 #endif /* PROCESSOR_H_ */

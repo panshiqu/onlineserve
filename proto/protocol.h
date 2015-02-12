@@ -13,20 +13,31 @@
 using namespace comm;
 
 enum COMMAND_TYPE {
-	UNKNOWN			= 0,
-	LISTENING		= 1,
+	UNKNOWN			= 0,		// 位置
+	LISTENING		= 1,		// 监听
 
-	AGENT_LOGIN		= 2,
-	AGENT_LOGOUT	= 3,
+	// 座席消息
+	AGENT_LOGIN		= 101,	// 登陆
+	AGENT_LOGOUT	= 102,	// 登出
+	AGENT_CHAT		= 103,	// 发起聊天
+
+	// 客户消息
+	CUSTOM_LOGIN	= 201,	// 登陆
+	CUSTOM_LOGOUT	= 202,	// 登出
+
+	// 服务器消息
+	SRV_AGENT_CHAT	= 501,	// 转发聊天
 };
 
 enum ERROR_CODE
 {
-	ERROR_SUCCEED		= 0,		// 成功
-	ERROR_ILLEGAL		= 1,		// 非法
+	E_SUCCEED			= 0,		// 成功
+	E_ILLEGAL			= 1,		// 非法
 
 	// 座席相关
-	ERROR_AGENT_LOGIN	= 101,	// 重复登陆
+	E_AGENT_LOGIN		= 101,	// 重复登陆
+	E_AGENT_LOGOUT		= 102,	// 重复退出
+	E_AGENT_FIND		= 103,	// 座席未找到
 };
 
 #endif /* PROTO_PROTOCOL_H_ */

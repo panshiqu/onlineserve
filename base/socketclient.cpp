@@ -213,7 +213,6 @@ void SocketClient::SendMessage(const char *pBuffer, int nLength, int nCommand, i
 	head.nLength = nLength + nLen;
 	head.nCommand = nCommand;
 	head.nErrorCode = nErrorCode;
-	cout << "CMD: " << nCommand << "Length: " << head.nLength << "ERR: " << nErrorCode << endl;
 
 	// 创建发送临时缓存
 	char *pTemp = new char[head.nLength];

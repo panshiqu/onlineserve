@@ -8,8 +8,6 @@
 #ifndef ONLINE_H_
 #define ONLINE_H_
 
-#include "base/header.h"
-
 enum AGENT_STATUS
 {
 	AGENT_FREE	= 0,	// 空闲

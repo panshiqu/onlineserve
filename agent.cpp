@@ -7,8 +7,9 @@
 
 #include "agent.h"
 
-Agent::Agent(int nID)
+Agent::Agent(int nID, SocketClient *pClient)
 	: m_nID(nID)
+	, m_pClient(pClient)
 {
 
 }
@@ -16,5 +17,10 @@ Agent::Agent(int nID)
 Agent::~Agent()
 {
 
+}
+
+void Agent::SendChat(char *pMessage, int nLength, int nCommand)
+{
+	m_pClient->SendMessage(pMessage, nLength, nCommand, 0);
 }
 

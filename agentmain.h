@@ -8,7 +8,9 @@
 #ifndef AGENTMAIN_H_
 #define AGENTMAIN_H_
 
-#include "online.h"
+#include "base/header.h"
+#include "proto/protocol.h"
+#include "base/socketclient.h"
 
 class Agent;
 class AgentMain
@@ -20,9 +22,12 @@ private:
 public:
 	SINGLETON(AgentMain)
 
-	bool InsertAgent(int nID);		// 增加座席
-	bool DeleteAgent(int nID);		// 删除座席
-	list<Agent *>::iterator GetAgent(int nID);	// 获取指定座席
+	bool FindAgent(int nID);									// 查找座席
+	bool InsertAgent(int nID, SocketClient *pClient);	// 增加座席
+	bool DeleteAgent(int nID);									// 删除座席
+	list<Agent *>::iterator GetAgent(int nID);			// 获取指定座席
+
+	int SendChat(int nID, char *pMessage, int nLength);// 发送聊天信息
 
 private:
 	list<Agent *> m_lAgents;	// 座席列表

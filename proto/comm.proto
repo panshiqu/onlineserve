@@ -1,21 +1,33 @@
 package comm;
 
-message ReqLogin
+message ReqAgentLogin
 {
 	required int32 aid = 1;		// 座席编号
 }
 
-message ResLogin
+message ResAgentLogin
+{
+
+}
+
+message ReqAgentLogout
 {
 	required int32 aid = 1;		// 座席编号
 }
 
-message ReqLogout
-{
-	required int32 aid = 1;		// 座席编号
-}
-
-message ResLogout
+message ResAgentLogout
 {
 	
+}
+
+message ReqAgentChat
+{
+	required int32 aid = 1;		// 座席编号
+	required int32 ato = 2;		// 聊天对象
+	required string word = 3;	// 聊天内容
+}
+
+message ResAgentChat
+{
+
 }

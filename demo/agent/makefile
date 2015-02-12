@@ -1,0 +1,35 @@
+CC = gcc
+XX = g++
+CFLAGS = -g -std=c++0x -lprotobuf
+
+#INC += -I /usr/include/mysql
+#INC += -I /usr/local/include/mysql++/
+
+#LIBS += -L -lmysqlclient_r -lmysqlpp
+
+TARGET = agent
+SOURCES += $(wildcard *.c *.cc *.cpp *.cxx)
+SOURCES += $(wildcard ../../base/*.c ../../base/*.cc ../../base/*.cpp ../../base/*.cxx)
+SOURCES += $(wildcard ../../proto/*.c ../../proto/*.cc ../../proto/*.cpp ../../proto/*.cxx)
+
+OBJECTS = $(patsubst %.c,%.o,$(patsubst %.cc,%.o,$(patsubst %.cpp,%.o,$(SOURCES))))
+
+%.o:%.c
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
+
+%.o:%.cc
+	$(XX) $(CFLAGS) $(INC) -c $< -o $@
+
+%.o:%.cpp
+	$(XX) $(CFLAGS) $(INC) -c $< -o $@
+
+%.o:%.cxx
+	$(XX) $(CFLAGS) $(INC) -c $< -o $@
+
+$(TARGET) : $(OBJECTS)
+	@echo $(SOURCES)
+	@echo $(OBJECTS)
+	$(XX) $(CFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
+
+clean:
+	rm -rf $(OBJECTS) $(TARGET)
