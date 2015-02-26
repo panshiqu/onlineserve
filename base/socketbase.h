@@ -52,7 +52,7 @@ public:
 
 public:
 	int GetSocket(void)				{ return m_nSocket; }
-	void SetSocket(int nSocket)		{ m_nSocket = nSocket; }
+	void SetSocket(int nSocket)	{ m_nSocket = nSocket; }
 
 private:
 	int m_nSocket;

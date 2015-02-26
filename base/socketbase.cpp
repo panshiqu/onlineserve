@@ -180,7 +180,7 @@ bool SocketBase::CheckReadable(void)
 	FD_SET(m_nSocket, &fds);
 	memset(&tv, 0, sizeof(tv));
 	while(((nRes = select(m_nSocket+1, &fds, NULL, NULL, &tv)) == -1) && (errno == EINTR));
-	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
+	return nRes;
 }
 
 bool SocketBase::CheckWritable(void)
@@ -196,7 +196,7 @@ bool SocketBase::CheckWritable(void)
 	FD_SET(m_nSocket, &fds);
 	memset(&tv, 0, sizeof(tv));
 	while(((nRes = select(m_nSocket+1, NULL, &fds, NULL, &tv)) == -1) && (errno == EINTR));
-	return ((nRes > 0) && FD_ISSET(m_nSocket, &fds) > 0) ? true : false;
+	return nRes;
 }
 
 int SocketBase::CheckConnected(void)
