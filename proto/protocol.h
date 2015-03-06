@@ -13,7 +13,7 @@
 using namespace comm;
 
 enum COMMAND_TYPE {
-	UNKNOWN			= 0,		// 位置
+	UNKNOWN			= 0,		// 未知
 	LISTENING		= 1,		// 监听
 
 	// 座席消息
