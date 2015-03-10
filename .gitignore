@@ -5,6 +5,7 @@
 *.cproject
 
 hello
+demo/agent/agent
 
 Debug/
 .settings/
