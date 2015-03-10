@@ -8,6 +8,7 @@
 #ifndef AGENTMAIN_H_
 #define AGENTMAIN_H_
 
+#include "online.h"
 #include "base/header.h"
 #include "proto/protocol.h"
 #include "base/socketclient.h"
@@ -22,14 +23,18 @@ private:
 public:
 	SINGLETON(AgentMain)
 
+	int GetMaxID(void)	{ return ++m_nMaxID; }
+
 	bool FindAgent(int nID);									// 查找座席
 	bool InsertAgent(int nID, SocketClient *pClient);	// 增加座席
 	bool DeleteAgent(int nID);									// 删除座席
 	list<Agent *>::iterator GetAgent(int nID);			// 获取指定座席
+	Agent *AllocAgent(void);									// 分配座席
 
 	int SendChat(int nID, char *pMessage, int nLength);// 发送聊天信息
 
 private:
+	int m_nMaxID = 10000;		// 客户编号
 	list<Agent *> m_lAgents;	// 座席列表
 };
 

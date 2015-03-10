@@ -8,6 +8,7 @@
 #include "processor.h"
 #include "dispatcher.h"
 #include "agentmain.h"
+#include "agent.h"
 
 Processor::Processor()
 {
@@ -27,6 +28,7 @@ void Processor::RegisterCallback(void)
 	Dispatcher::GetInstance().RegisterCallback(AGENT_LOGIN, bind(&Processor::ProcAgentLogin, &Processor::GetInstance(), placeholders::_1, placeholders::_2, placeholders::_3));
 	Dispatcher::GetInstance().RegisterCallback(AGENT_LOGOUT, bind(&Processor::ProcAgentLogout, &Processor::GetInstance(), placeholders::_1, placeholders::_2, placeholders::_3));
 	Dispatcher::GetInstance().RegisterCallback(AGENT_CHAT, bind(&Processor::ProcAgentChat, &Processor::GetInstance(), placeholders::_1, placeholders::_2, placeholders::_3));
+	Dispatcher::GetInstance().RegisterCallback(AGENT_REQUEST, bind(&Processor::ProcAgentRequest, &Processor::GetInstance(), placeholders::_1, placeholders::_2, placeholders::_3));
 }
 
 void Processor::SendMessage(SocketClient *pClient,
@@ -101,6 +103,25 @@ int Processor::ProcAgentChat(char *pMessage, int nLength, SocketClient *pClient)
 
 	// 发送回复
 	SendMessage(pClient, res, AGENT_CHAT, 0);
+	return E_SUCCEED;
+}
+
+int Processor::ProcAgentRequest(char *pMessage, int nLength, SocketClient *pClient)
+{
+	// 解析消息
+	ReqAgentRequest req;
+	ResAgentRequest res;
+	req.ParseFromArray(pMessage, nLength);
+
+	// 分配座席
+	Agent *pAgent = AgentMain::GetInstance().AllocAgent();
+	if (pAgent != NULL)
+	{
+		res.set_aid(pAgent->GetID());
+	}
+
+	// 发送回复
+	SendMessage(pClient, res, AGENT_REQUEST, 0);
 	return E_SUCCEED;
 }
 

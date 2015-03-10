@@ -2,12 +2,12 @@ package comm;
 
 message ReqAgentLogin
 {
-	required int32 aid = 1;		// 座席编号
+	optional int32 aid = 1;		// 座席编号
 }
 
 message ResAgentLogin
 {
-
+	optional int32 aid = 1;		// 座席编号
 }
 
 message ReqAgentLogout
@@ -18,6 +18,16 @@ message ReqAgentLogout
 message ResAgentLogout
 {
 	
+}
+
+message ReqAgentRequest
+{
+	required int32 aid = 1;		// 座席编号
+}
+
+message ResAgentRequest
+{
+	optional int32 aid = 2;		// 座席编号
 }
 
 message ReqAgentChat

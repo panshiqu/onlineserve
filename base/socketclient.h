@@ -29,6 +29,12 @@ public:
 	void SendMessage(const char *pBuffer, int nLength, int nCommand, int nErrorCode);
 
 public:
+	int GetPort(void)						{ return m_nPort; }
+	char *GetAddress(void)				{ return m_szAddress; }
+
+	void SetPort(int nPort)				{ m_nPort = nPort; }
+	void SetAddress(char *pAddress)	{ memcpy(m_szAddress, pAddress, SOCKET_ADDRESS_SIZE); }
+
 	int GetSocket(void)				{ return m_hSocket.GetSocket(); }
 	int GetSendSize(void)			{ return m_lSendBuffers.size(); }
 	bool SetNonblock(void)			{ return m_hSocket.SetNonblock(); }

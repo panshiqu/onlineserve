@@ -95,6 +95,12 @@ void SocketServer::Run(void)
 				if (!pClient->SetNonblock()) delete pClient;
 				else
 				{
+					// 获取连接信息
+					char szAddress[SOCKET_ADDRESS_SIZE];
+					inet_ntop(AF_INET, &addr.sin_addr, szAddress, sizeof(szAddress));
+					pClient->SetPort(ntohs(addr.sin_port));
+					pClient->SetAddress(szAddress);
+
 					m_vClients.push_back(pClient);
 					m_pDelegate->OnConnected(pClient);
 				}

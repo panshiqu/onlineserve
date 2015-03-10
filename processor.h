@@ -37,6 +37,7 @@ public:
 	int ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient);
 	int ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClient);
 	int ProcAgentChat(char *pMessage, int nLength, SocketClient *pClient);
+	int ProcAgentRequest(char *pMessage, int nLength, SocketClient *pClient);
 };
 
 #endif /* PROCESSOR_H_ */

@@ -77,6 +77,22 @@ int main(void)
 			}
 			break;
 
+		case AGENT_REQUEST:
+			{
+				cout << "format as aid:";
+
+				int nAgentID;
+				scanf("%d", &nAgentID);
+
+				ReqAgentRequest req;
+				req.set_aid(nAgentID);
+
+				char szMessage[req.ByteSize()];
+				req.SerializeToArray(szMessage, req.ByteSize());
+				agent.SendMessage(szMessage, req.ByteSize(), cmd, 0);
+			}
+			break;
+
 		default:
 			break;
 		}

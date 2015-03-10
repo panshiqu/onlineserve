@@ -33,6 +33,14 @@ bool AgentMain::FindAgent(int nID)
 
 bool AgentMain::InsertAgent(int nID, SocketClient *pClient)
 {
+	// 客户请求座席编号
+	int nType = AGENT_TYPE_AGENT;
+	if (!nID)
+	{
+		nID = GetMaxID();
+		nType = AGENT_TYPE_CUSTOM;
+	}
+
 	// 获取座席
 	list<Agent *>::iterator itr = GetAgent(nID);
 	if (itr != m_lAgents.end()) return E_AGENT_LOGIN;
@@ -40,6 +48,7 @@ bool AgentMain::InsertAgent(int nID, SocketClient *pClient)
 	// 插入座席
 	Agent *pAgent = new Agent(nID, pClient);
 	m_lAgents.push_back(pAgent);
+	pAgent->SetType(nType);
 
 	return E_SUCCEED;
 }
@@ -71,6 +80,28 @@ list<Agent *>::iterator AgentMain::GetAgent(int nID)
 
 	// 不存在返回
 	return m_lAgents.end();
+}
+
+Agent *AgentMain::AllocAgent(void)
+{
+	// 遍历整个座席组
+	list<Agent *>::iterator itr = m_lAgents.begin();
+	for (; itr != m_lAgents.end(); itr++)
+	{
+		Agent *pAgent = *itr;
+		if (pAgent->GetType() == AGENT_TYPE_AGENT &&
+			pAgent->GetStatus() == AGENT_STATUS_FREE)
+		{
+			// 分配策略
+			m_lAgents.erase(itr);
+			m_lAgents.push_back(pAgent);
+			pAgent->SetStatus(AGENT_STATUS_BUSY);
+			return pAgent;
+		}
+	}
+
+	// 座席全忙
+	return NULL;
 }
 
 int AgentMain::SendChat(int nID, char *pMessage, int nLength)

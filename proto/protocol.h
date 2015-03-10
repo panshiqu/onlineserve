@@ -20,6 +20,7 @@ enum COMMAND_TYPE {
 	AGENT_LOGIN		= 101,	// 登陆
 	AGENT_LOGOUT	= 102,	// 登出
 	AGENT_CHAT		= 103,	// 发起聊天
+	AGENT_REQUEST	= 104,	// 请求座席
 
 	// 客户消息
 	CUSTOM_LOGIN	= 201,	// 登陆

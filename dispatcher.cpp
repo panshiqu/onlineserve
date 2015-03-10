@@ -31,7 +31,7 @@ void Dispatcher::Dispatch(void)
 
 void Dispatcher::OnConnected(SocketClient *pClient)
 {
-	cout << "OnConnected." << endl;
+	cout << "IP: " << pClient->GetAddress() << " Port: " << pClient->GetPort() << " OnConnected." << endl;
 }
 
 void Dispatcher::OnDisconnected(SocketClient *pClient)

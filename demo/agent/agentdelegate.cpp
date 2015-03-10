@@ -48,6 +48,15 @@ void AgentDelegate::OnMessage(char *pMessage, SocketClient *pClient)
 		}
 		break;
 
+	case AGENT_REQUEST:
+		{
+			ResAgentRequest res;
+			res.ParseFromArray(&pMessage[sizeof(Header)], pHeader->nLength - sizeof(Header));
+
+			cout << "Free Agent: " << res.aid() << endl;
+		}
+		break;
+
 	default:
 		break;
 	}
