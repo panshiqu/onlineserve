@@ -23,15 +23,19 @@ private:
 public:
 	SINGLETON(AgentMain)
 
-	int GetMaxID(void)	{ return ++m_nMaxID; }
+	bool OnDisconnected(SocketClient *pClient);			// 连接断开
 
+	// 座席操作相关
 	bool FindAgent(int nID);									// 查找座席
-	bool InsertAgent(int nID, SocketClient *pClient);	// 增加座席
 	bool DeleteAgent(int nID);									// 删除座席
-	list<Agent *>::iterator GetAgent(int nID);			// 获取指定座席
+	list<Agent *>::iterator GetAgent(int nID);			// 获取座席
+	Agent *InsertAgent(int nID, SocketClient *pClient);// 增加座席
 	Agent *AllocAgent(void);									// 分配座席
 
 	int SendChat(int nID, char *pMessage, int nLength);// 发送聊天信息
+
+public:
+	int GetMaxID(void)	{ return ++m_nMaxID; }
 
 private:
 	int m_nMaxID = 10000;		// 客户编号

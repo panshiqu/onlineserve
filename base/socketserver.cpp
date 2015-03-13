@@ -96,7 +96,7 @@ void SocketServer::Run(void)
 				else
 				{
 					// 获取连接信息
-					char szAddress[SOCKET_ADDRESS_SIZE];
+					char szAddress[SOCKET_ADDRESS_SIZE] = {0};
 					inet_ntop(AF_INET, &addr.sin_addr, szAddress, sizeof(szAddress));
 					pClient->SetPort(ntohs(addr.sin_port));
 					pClient->SetAddress(szAddress);

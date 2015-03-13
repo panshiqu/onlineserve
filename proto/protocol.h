@@ -22,10 +22,6 @@ enum COMMAND_TYPE {
 	AGENT_CHAT		= 103,	// 发起聊天
 	AGENT_REQUEST	= 104,	// 请求座席
 
-	// 客户消息
-	CUSTOM_LOGIN	= 201,	// 登陆
-	CUSTOM_LOGOUT	= 202,	// 登出
-
 	// 服务器消息
 	SRV_AGENT_CHAT	= 501,	// 转发聊天
 };

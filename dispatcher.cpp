@@ -7,6 +7,7 @@
 
 #include "dispatcher.h"
 #include "processor.h"
+#include "agentmain.h"
 
 Dispatcher::Dispatcher()
 {
@@ -36,7 +37,8 @@ void Dispatcher::OnConnected(SocketClient *pClient)
 
 void Dispatcher::OnDisconnected(SocketClient *pClient)
 {
-	cout << "OnDisconnected." << endl;
+	cout << "IP: " << pClient->GetAddress() << " Port: " << pClient->GetPort() << " OnDisconnected." << endl;
+	AgentMain::GetInstance().OnDisconnected(pClient);
 }
 
 void Dispatcher::OnConnectFailed(SocketClient *pClient)

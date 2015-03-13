@@ -22,33 +22,21 @@ AgentMain::~AgentMain()
 	m_lAgents.clear();
 }
 
+bool AgentMain::OnDisconnected(SocketClient *pClient)
+{
+	// 获取断开连接座席
+	for (auto pAgent : m_lAgents)
+		if (pAgent->GetClient() == pClient)
+			return DeleteAgent(pAgent->GetID());
+
+	return E_SUCCEED;
+}
+
 bool AgentMain::FindAgent(int nID)
 {
 	// 获取座席
 	list<Agent *>::iterator itr = GetAgent(nID);
 	if (itr == m_lAgents.end()) return E_AGENT_FIND;
-
-	return E_SUCCEED;
-}
-
-bool AgentMain::InsertAgent(int nID, SocketClient *pClient)
-{
-	// 客户请求座席编号
-	int nType = AGENT_TYPE_AGENT;
-	if (!nID)
-	{
-		nID = GetMaxID();
-		nType = AGENT_TYPE_CUSTOM;
-	}
-
-	// 获取座席
-	list<Agent *>::iterator itr = GetAgent(nID);
-	if (itr != m_lAgents.end()) return E_AGENT_LOGIN;
-
-	// 插入座席
-	Agent *pAgent = new Agent(nID, pClient);
-	m_lAgents.push_back(pAgent);
-	pAgent->SetType(nType);
 
 	return E_SUCCEED;
 }
@@ -69,7 +57,7 @@ bool AgentMain::DeleteAgent(int nID)
 
 list<Agent *>::iterator AgentMain::GetAgent(int nID)
 {
-	// 获取指定座席
+	// 获取座席
 	list<Agent *>::iterator itr = m_lAgents.begin();
 	for (; itr != m_lAgents.end(); itr++)
 	{
@@ -80,6 +68,24 @@ list<Agent *>::iterator AgentMain::GetAgent(int nID)
 
 	// 不存在返回
 	return m_lAgents.end();
+}
+
+Agent *AgentMain::InsertAgent(int nID, SocketClient *pClient)
+{
+	// 客户请求座席编号
+	int nType = AGENT_TYPE_AGENT;
+	if (!nID)
+	{
+		nID = GetMaxID();
+		nType = AGENT_TYPE_CUSTOM;
+	}
+
+	// 插入座席
+	Agent *pAgent = new Agent(nID, pClient);
+	m_lAgents.push_back(pAgent);
+	pAgent->SetType(nType);
+
+	return pAgent;
 }
 
 Agent *AgentMain::AllocAgent(void)

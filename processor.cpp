@@ -61,11 +61,16 @@ int Processor::ProcAgentLogin(char *pMessage, int nLength, SocketClient *pClient
 	ResAgentLogin res;
 	req.ParseFromArray(pMessage, nLength);
 
-	// 插入座席失败
-	int nRes = AgentMain::GetInstance().InsertAgent(req.aid(), pClient);
-	if (nRes != E_SUCCEED) return nRes;
+	// 是否已存在
+	int nRes = AgentMain::GetInstance().FindAgent(req.aid());
+	if (nRes == E_SUCCEED) return E_AGENT_LOGIN;
 
-	cout << "InsertAgent Succeed." << endl;
+	// 插入座席
+	Agent *pAgent = AgentMain::GetInstance().InsertAgent(req.aid(), pClient);
+	if (pAgent != NULL)
+	{
+		res.set_aid(pAgent->GetID());
+	}
 
 	// 发送回复
 	SendMessage(pClient, res, AGENT_LOGIN, 0);
@@ -79,11 +84,9 @@ int Processor::ProcAgentLogout(char *pMessage, int nLength, SocketClient *pClien
 	ResAgentLogout res;
 	req.ParseFromArray(pMessage, nLength);
 
-	// 删除座席失败
+	// 删除座席
 	int nRes = AgentMain::GetInstance().DeleteAgent(req.aid());
 	if (nRes != E_SUCCEED) return nRes;
-
-	cout << "DeleteAgent Succeed." << endl;
 
 	// 发送回复
 	SendMessage(pClient, res, AGENT_LOGOUT, 0);
