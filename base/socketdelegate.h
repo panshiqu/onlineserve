@@ -13,8 +13,8 @@
 class SocketClient;
 class SocketDelegate {
 public:
-	SocketDelegate();
-	virtual ~SocketDelegate();
+	SocketDelegate() {};
+	virtual ~SocketDelegate() {};
 
 	// Socket Connected
 	virtual void OnConnected(SocketClient *pClient = NULL) {}
