@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketserver.cpp
  *
  *  Created on: 2015年1月24日
@@ -83,8 +83,8 @@ void SocketServer::Run(void)
 		// 监听套接字可读
 		if (FD_ISSET(m_hSocket.GetSocket(), &readSet))
 		{
+			int nSocket;
 			struct sockaddr_in addr;
-			int nSocket = INVALID_SOCKET;
 			socklen_t length = sizeof(struct sockaddr_in);
 
 			// 接受连接
@@ -97,7 +97,8 @@ void SocketServer::Run(void)
 				{
 					// 获取连接信息
 					char szAddress[SOCKET_ADDRESS_SIZE] = {0};
-					inet_ntop(AF_INET, &addr.sin_addr, szAddress, sizeof(szAddress));
+					static char *pAddress = inet_ntoa(addr.sin_addr);
+					memcpy(szAddress, pAddress, strlen(pAddress));
 					pClient->SetPort(ntohs(addr.sin_port));
 					pClient->SetAddress(szAddress);
 

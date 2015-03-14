@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketdelegate.cpp
  *
  *  Created on: 2015年2月8日

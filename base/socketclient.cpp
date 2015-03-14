@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketclient.cpp
  *
  *  Created on: 2015年1月25日
@@ -9,20 +9,34 @@
 #include "socketdelegate.h"
 
 SocketClient::SocketClient()
+	: m_nPort(0)
+	, m_nStatus(0)
+	, m_nBufferOffset(0)
+	, m_pDelegate(NULL)
 {
-
+	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
+	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
 }
 
 SocketClient::SocketClient(int nSocket)
-	: m_hSocket(nSocket)
+	: m_nPort(0)
+	, m_nStatus(0)
+	, m_nBufferOffset(0)
+	, m_hSocket(nSocket)
+	, m_pDelegate(NULL)
 {
-
+	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
+	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
 }
 
 SocketClient::SocketClient(SocketDelegate *pDelegate)
-	: m_pDelegate(pDelegate)
+	: m_nPort(0)
+	, m_nStatus(0)
+	, m_nBufferOffset(0)
+	, m_pDelegate(pDelegate)
 {
-
+	memset(m_szAddress, 0, SOCKET_ADDRESS_SIZE);
+	memset(m_szRecvBuffers, 0, SOCKET_READ_BUFFER_SIZE);
 }
 
 SocketClient::~SocketClient()

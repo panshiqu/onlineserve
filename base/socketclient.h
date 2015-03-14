@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketclient.h
  *
  *  Created on: 2015年1月25日
@@ -8,7 +8,14 @@
 #ifndef SOCKETCLIENT_H_
 #define SOCKETCLIENT_H_
 
+#include <list>
+#include <iostream>
+
+#include <assert.h>
+
 #include "socketbase.h"
+
+using namespace std;
 
 class SocketDelegate;
 class SocketClient {
@@ -40,14 +47,14 @@ public:
 	bool SetNonblock(void)			{ return m_hSocket.SetNonblock(); }
 
 private:
-	int m_nPort = 0;													// 对端端口
-	int m_nStatus = 0;												// 套接字状态
-	int m_nBufferOffset = 0;										// 接收缓存偏移量
-	SocketBase m_hSocket;											// 套接字句柄
-	list<SendBuffer *> m_lSendBuffers;							// 发送缓存列表
-	SocketDelegate *m_pDelegate = NULL;							// 套接字代理
-	char m_szAddress[SOCKET_ADDRESS_SIZE] = {0};				// 对端网络地址
-	char m_szRecvBuffers[SOCKET_READ_BUFFER_SIZE] = {0};	// 接收缓存
+	int m_nPort;												// 对端端口
+	int m_nStatus;												// 套接字状态
+	int m_nBufferOffset;										// 接收缓存偏移量
+	SocketBase m_hSocket;									// 套接字句柄
+	list<SendBuffer *> m_lSendBuffers;					// 发送缓存列表
+	SocketDelegate *m_pDelegate;							// 套接字代理
+	char m_szAddress[SOCKET_ADDRESS_SIZE];				// 对端网络地址
+	char m_szRecvBuffers[SOCKET_READ_BUFFER_SIZE];	// 接收缓存
 };
 
 #endif /* SOCKETCLIENT_H_ */

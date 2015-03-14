@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketdelegate.h
  *
  *  Created on: 2015年2月8日
@@ -8,7 +8,7 @@
 #ifndef SOCKETDELEGATE_H_
 #define SOCKETDELEGATE_H_
 
-#include "header.h"
+#include <iostream>
 
 class SocketClient;
 class SocketDelegate {

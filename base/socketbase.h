@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketbase.h
  *
  *  Created on: 2015年1月15日
@@ -8,15 +8,23 @@
 #ifndef SOCKETBASE_H_
 #define SOCKETBASE_H_
 
-#include <fcntl.h>
 #include <errno.h>
+#include <string.h>
+
+#ifdef WIN32
+#include <winsock2.h>
+typedef int socklen_t;
+typedef short int in_port_t;
+#elif __linux__
+#include <fcntl.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#define INVALID_SOCKET -1
+#endif
 
 #include "header.h"
 
@@ -46,8 +54,8 @@ public:
 public:
 	bool SetNonblock(void);
 	bool SetReuseaddr(void);
-	bool CheckReadable(void);
-	bool CheckWritable(void);
+	int CheckReadable(void);
+	int CheckWritable(void);
 	int CheckConnected(void);
 
 public:

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * header.h
  *
  *  Created on: 2015年2月5日
@@ -7,20 +7,6 @@
 
 #ifndef HEADER_H_
 #define HEADER_H_
-
-#include <map>
-#include <list>
-#include <vector>
-#include <iostream>
-#include <functional>
-
-#include <assert.h>
-
-using namespace std;
-
-#ifndef INVALID_SOCKET
-#define INVALID_SOCKET -1
-#endif
 
 #ifndef SOCKET_ADDRESS_SIZE
 #define SOCKET_ADDRESS_SIZE 20

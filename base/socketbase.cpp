@@ -1,4 +1,4 @@
-/*
+﻿/*
  * socketbase.cpp
  *
  *  Created on: 2015年1月15日
@@ -29,8 +29,14 @@ void SocketBase::Close(void)
 {
 	if (m_nSocket != INVALID_SOCKET)
 	{
+		#ifdef WIN32
+		shutdown(m_nSocket, SD_BOTH);
+		closesocket(m_nSocket);
+		#elif __linux__
 		shutdown(m_nSocket, SHUT_RDWR);
 		close(m_nSocket);
+		#endif
+
 		m_nSocket = INVALID_SOCKET;
 	}
 }
@@ -56,7 +62,12 @@ bool SocketBase::Bind(in_port_t nPort, const char *pAddress, int nDomain)
 	struct sockaddr_in addr;
 	addr.sin_family = nDomain;
 	addr.sin_port = htons(nPort);
+
+	#ifdef WIN32
+	addr.sin_addr.S_un.S_addr = inet_addr(pAddress);
+	#elif __linux__
 	inet_pton(AF_INET, pAddress, &(addr.sin_addr));
+	#endif
 
 	if (bind(m_nSocket, (struct sockaddr *)&addr, sizeof(addr)) == 0)
 		return true;
@@ -76,7 +87,12 @@ bool SocketBase::Accept(int &nSocket, sockaddr *pAddress, socklen_t *pLength)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
 
+	#ifdef WIN32
+	while (((nSocket = accept(m_nSocket, pAddress, (int *)pLength)) == INVALID_SOCKET) && (errno == EINTR));
+	#elif __linux__
 	while (((nSocket = accept(m_nSocket, pAddress, pLength)) == INVALID_SOCKET) && (errno == EINTR));
+	#endif
+
 	return nSocket == INVALID_SOCKET ? false : true;
 }
 
@@ -87,7 +103,13 @@ bool SocketBase::Connect(const char *pAddress, in_port_t nPort)
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(nPort);
+
+	#ifdef WIN32
+	addr.sin_addr.S_un.S_addr = inet_addr(pAddress);
+	#elif __linux__
 	inet_pton(AF_INET, pAddress, &(addr.sin_addr));
+	#endif
+
 	if (addr.sin_addr.s_addr == INADDR_NONE)
 	{
 		struct hostent *phe;
@@ -146,6 +168,12 @@ bool SocketBase::SetNonblock(void)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
 
+	#ifdef WIN32
+	// 设置非阻塞属性
+	unsigned long ulNonblock = 1;
+	int nRes = ioctlsocket(m_nSocket, FIONBIO, (unsigned long *)&ulNonblock);
+	if(nRes == SOCKET_ERROR) return false;
+	#elif __linux__
 	// 获取描述符属性
 	int nOptions = fcntl(m_nSocket, F_GETFL);
 	if (nOptions == -1) return false;
@@ -153,6 +181,8 @@ bool SocketBase::SetNonblock(void)
 
 	// 设置非阻塞属性
 	if (fcntl(m_nSocket, F_SETFL, nOptions) == -1) return false;
+	#endif
+
 	return true;
 }
 
@@ -162,12 +192,12 @@ bool SocketBase::SetReuseaddr(void)
 
 	// 设置可重用属性
 	int nReuseaddr = 1;
-	if (setsockopt(m_nSocket, SOL_SOCKET, SO_REUSEADDR, &nReuseaddr, sizeof(nReuseaddr)) == -1)
+	if (setsockopt(m_nSocket, SOL_SOCKET, SO_REUSEADDR, (char *)&nReuseaddr, sizeof(nReuseaddr)) == -1)
 		return false;
 	return true;
 }
 
-bool SocketBase::CheckReadable(void)
+int SocketBase::CheckReadable(void)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
 
@@ -183,7 +213,7 @@ bool SocketBase::CheckReadable(void)
 	return nRes;
 }
 
-bool SocketBase::CheckWritable(void)
+int SocketBase::CheckWritable(void)
 {
 	if (m_nSocket == INVALID_SOCKET) return false;
 
@@ -207,7 +237,7 @@ int SocketBase::CheckConnected(void)
 		// 连接状态
 		int nError;
 		socklen_t nLength = sizeof(nError);
-		if (getsockopt(m_nSocket, SOL_SOCKET, SO_ERROR, &nError, &nLength) == -1)
+		if (getsockopt(m_nSocket, SOL_SOCKET, SO_ERROR, (char *)&nError, &nLength) == -1)
 			return SOCKET_CONNECTFAILED;
 
 		// 连接拒绝或超时
